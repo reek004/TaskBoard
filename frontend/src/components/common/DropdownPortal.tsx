@@ -30,15 +30,15 @@ const DropdownPortal: React.FC<DropdownPortalProps> = ({
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
       
-      // Calculate preferred position (below the trigger)
-      let top = triggerRect.bottom + window.scrollY + 8;
-      let left = triggerRect.right + window.scrollX - dropdownRect.width;
+      // Calculate preferred position (below the trigger) - using viewport coordinates
+      let top = triggerRect.bottom + 8;
+      let left = triggerRect.right - dropdownRect.width;
       let placement: 'top' | 'bottom' = 'bottom';
 
       // Check if dropdown would go outside viewport bottom
       if (triggerRect.bottom + dropdownRect.height + 8 > viewportHeight) {
         // Position above the trigger instead
-        top = triggerRect.top + window.scrollY - dropdownRect.height - 8;
+        top = triggerRect.top - dropdownRect.height - 8;
         placement = 'top';
       }
 
