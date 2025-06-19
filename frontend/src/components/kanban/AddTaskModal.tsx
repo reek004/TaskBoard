@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import type { CreateTaskData, Priority, User } from '../../types';
 import { mockUsers } from '../../utils/data';
-import { X, ChevronDown, Flag, User as UserIcon, Calendar } from 'lucide-react';
+import { X, ChevronDown, Flag, User as UserIcon, Calendar, Eye, Edit3 } from 'lucide-react';
 
 interface AddTaskModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   });
   const [showPriorityDropdown, setShowPriorityDropdown] = useState(false);
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
+  const [showMarkdownPreview, setShowMarkdownPreview] = useState(false);
 
   if (!isOpen) return null;
 
@@ -127,16 +129,57 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
           <div>
             <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-3">
               Description
-              <span className="text-gray-400 font-normal ml-2">(optional)</span>
+              <span className="text-gray-400 font-normal ml-2">(optional, Markdown supported)</span>
             </label>
-            <textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-4 py-4 bg-gray-50 border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all text-base placeholder-gray-400 resize-none outline-none"
-              placeholder="Enter task description"
-              rows={4}
-            />
+            <div className="flex items-center justify-between mb-3">
+              {formData.description && (
+                <button
+                  type="button"
+                  onClick={() => setShowMarkdownPreview(!showMarkdownPreview)}
+                  className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg transition-all"
+                >
+                  {showMarkdownPreview ? <Edit3 size={16} /> : <Eye size={16} />}
+                  {showMarkdownPreview ? 'Edit' : 'Preview'}
+                </button>
+              )}
+            </div>
+            
+            {showMarkdownPreview ? (
+              <div className="bg-gray-50 border-2 border-transparent rounded-xl p-4 min-h-[120px]">
+                <ReactMarkdown
+                  components={{
+                    h1: ({ children }) => <h1 className="text-lg font-bold mb-2 text-gray-900">{children}</h1>,
+                    h2: ({ children }) => <h2 className="text-base font-bold mb-2 text-gray-900">{children}</h2>,
+                    h3: ({ children }) => <h3 className="text-sm font-semibold mb-1 text-gray-900">{children}</h3>,
+                    h4: ({ children }) => <h4 className="text-sm font-semibold mb-1 text-gray-900">{children}</h4>,
+                    h5: ({ children }) => <h5 className="text-sm font-semibold mb-1 text-gray-900">{children}</h5>,
+                    h6: ({ children }) => <h6 className="text-sm font-semibold mb-1 text-gray-900">{children}</h6>,
+                    p: ({ children }) => <p className="mb-2 text-gray-700 leading-relaxed">{children}</p>,
+                    ul: ({ children }) => <ul className="list-disc list-inside mb-2 text-gray-700 space-y-1">{children}</ul>,
+                    ol: ({ children }) => <ol className="list-decimal list-inside mb-2 text-gray-700 space-y-1">{children}</ol>,
+                    li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                    code: ({ children }) => <code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono text-gray-800">{children}</code>,
+                    pre: ({ children }) => <pre className="bg-gray-100 p-2 rounded text-sm font-mono overflow-x-auto mb-2 text-gray-800">{children}</pre>,
+                    blockquote: ({ children }) => <blockquote className="border-l-4 border-blue-400 pl-3 italic text-gray-600 mb-2 bg-blue-50 py-1">{children}</blockquote>,
+                    strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
+                    em: ({ children }) => <em className="italic text-gray-700">{children}</em>,
+                    a: ({ children, href }) => <a href={href} className="text-blue-600 hover:text-blue-800 underline" target="_blank" rel="noopener noreferrer">{children}</a>,
+                    hr: () => <hr className="border-gray-300 my-2" />,
+                  }}
+                >
+                  {formData.description}
+                </ReactMarkdown>
+              </div>
+            ) : (
+              <textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                className="w-full px-4 py-4 bg-gray-50 border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all text-base placeholder-gray-400 resize-none outline-none"
+                placeholder="Enter task description (Markdown supported)"
+                rows={4}
+              />
+            )}
           </div>
 
           {/* Priority Field */}

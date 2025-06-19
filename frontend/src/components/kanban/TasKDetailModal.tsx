@@ -92,6 +92,13 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     }
   };
 
+  const handleDeleteComment = (commentId: string) => {
+    if (window.confirm('Are you sure you want to delete this comment?')) {
+      const updatedComments = task.comments.filter(comment => comment.id !== commentId);
+      onUpdate(task.id, { comments: updatedComments });
+    }
+  };
+
   const getPriorityColor = (priority: Priority) => {
     switch (priority) {
       case 'high': return 'bg-red-100 text-red-800 border-red-200';
@@ -207,8 +214,30 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               
               {isEditing ? (
                 showMarkdownPreview ? (
-                  <div className="prose prose-sm max-w-none bg-gray-50 border-2 border-transparent rounded-xl p-4 min-h-[200px]">
-                    <ReactMarkdown>{editData.description}</ReactMarkdown>
+                  <div className="bg-gray-50 border-2 border-transparent rounded-xl p-4 min-h-[200px]">
+                    <ReactMarkdown
+                      components={{
+                        h1: ({ children }) => <h1 className="text-xl font-bold mb-3 text-gray-900">{children}</h1>,
+                        h2: ({ children }) => <h2 className="text-lg font-bold mb-2 text-gray-900">{children}</h2>,
+                        h3: ({ children }) => <h3 className="text-base font-semibold mb-2 text-gray-900">{children}</h3>,
+                        h4: ({ children }) => <h4 className="text-sm font-semibold mb-1 text-gray-900">{children}</h4>,
+                        h5: ({ children }) => <h5 className="text-sm font-semibold mb-1 text-gray-900">{children}</h5>,
+                        h6: ({ children }) => <h6 className="text-sm font-semibold mb-1 text-gray-900">{children}</h6>,
+                        p: ({ children }) => <p className="mb-3 text-gray-700 leading-relaxed">{children}</p>,
+                        ul: ({ children }) => <ul className="list-disc list-inside mb-3 text-gray-700 space-y-1">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal list-inside mb-3 text-gray-700 space-y-1">{children}</ol>,
+                        li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                        code: ({ children }) => <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-gray-800">{children}</code>,
+                        pre: ({ children }) => <pre className="bg-gray-100 p-3 rounded-lg text-sm font-mono overflow-x-auto mb-3 text-gray-800">{children}</pre>,
+                        blockquote: ({ children }) => <blockquote className="border-l-4 border-blue-400 pl-4 italic text-gray-600 mb-3 bg-blue-50 py-2">{children}</blockquote>,
+                        strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
+                        em: ({ children }) => <em className="italic text-gray-700">{children}</em>,
+                        a: ({ children, href }) => <a href={href} className="text-blue-600 hover:text-blue-800 underline" target="_blank" rel="noopener noreferrer">{children}</a>,
+                        hr: () => <hr className="border-gray-300 my-4" />,
+                      }}
+                    >
+                      {editData.description}
+                    </ReactMarkdown>
                   </div>
                 ) : (
                   <textarea
@@ -220,8 +249,30 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                   />
                 )
               ) : task.description ? (
-                <div className="prose prose-sm max-w-none bg-gray-50 rounded-xl p-4">
-                  <ReactMarkdown>{task.description}</ReactMarkdown>
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <ReactMarkdown
+                    components={{
+                      h1: ({ children }) => <h1 className="text-xl font-bold mb-3 text-gray-900">{children}</h1>,
+                      h2: ({ children }) => <h2 className="text-lg font-bold mb-2 text-gray-900">{children}</h2>,
+                      h3: ({ children }) => <h3 className="text-base font-semibold mb-2 text-gray-900">{children}</h3>,
+                      h4: ({ children }) => <h4 className="text-sm font-semibold mb-1 text-gray-900">{children}</h4>,
+                      h5: ({ children }) => <h5 className="text-sm font-semibold mb-1 text-gray-900">{children}</h5>,
+                      h6: ({ children }) => <h6 className="text-sm font-semibold mb-1 text-gray-900">{children}</h6>,
+                      p: ({ children }) => <p className="mb-3 text-gray-700 leading-relaxed">{children}</p>,
+                      ul: ({ children }) => <ul className="list-disc list-inside mb-3 text-gray-700 space-y-1">{children}</ul>,
+                      ol: ({ children }) => <ol className="list-decimal list-inside mb-3 text-gray-700 space-y-1">{children}</ol>,
+                      li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                      code: ({ children }) => <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-gray-800">{children}</code>,
+                      pre: ({ children }) => <pre className="bg-gray-100 p-3 rounded-lg text-sm font-mono overflow-x-auto mb-3 text-gray-800">{children}</pre>,
+                      blockquote: ({ children }) => <blockquote className="border-l-4 border-blue-400 pl-4 italic text-gray-600 mb-3 bg-blue-50 py-2">{children}</blockquote>,
+                      strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
+                      em: ({ children }) => <em className="italic text-gray-700">{children}</em>,
+                      a: ({ children, href }) => <a href={href} className="text-blue-600 hover:text-blue-800 underline" target="_blank" rel="noopener noreferrer">{children}</a>,
+                      hr: () => <hr className="border-gray-300 my-4" />,
+                    }}
+                  >
+                    {task.description}
+                  </ReactMarkdown>
                 </div>
               ) : (
                 <p className="text-gray-500 italic bg-gray-50 rounded-xl p-4">No description provided</p>
@@ -265,15 +316,26 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                         className="w-8 h-8 rounded-full"
                       />
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-sm font-semibold text-gray-900">
-                            {comment.author.name}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {format(comment.createdAt, 'MMM d, h:mm a')}
-                          </span>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-gray-900">
+                              {comment.author.name}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {format(comment.createdAt, 'MMM d, h:mm a')}
+                            </span>
+                          </div>
+                          {(user?.id === comment.author.id || user?.role === 'admin') && (
+                            <button
+                              onClick={() => handleDeleteComment(comment.id)}
+                              className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-all"
+                              title="Delete comment"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
                         </div>
-                        <p className="text-sm text-gray-700">{comment.text}</p>
+                        <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{comment.text}</p>
                       </div>
                     </div>
                   ))

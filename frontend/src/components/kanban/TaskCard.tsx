@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { Task } from '../../types';
@@ -82,9 +83,28 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
 
       {/* Description */}
       {task.description && (
-        <p className="text-xs text-gray-600 mb-3 line-clamp-2 leading-4 break-words">
-          {task.description}
-        </p>
+        <div className="text-xs text-gray-600 mb-3 line-clamp-2 leading-4 break-words prose prose-xs max-w-none">
+          <ReactMarkdown 
+            components={{
+              // Customize markdown components for compact display
+              p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
+              h1: ({ children }) => <h1 className="text-xs font-semibold mb-1">{children}</h1>,
+              h2: ({ children }) => <h2 className="text-xs font-semibold mb-1">{children}</h2>,
+              h3: ({ children }) => <h3 className="text-xs font-semibold mb-1">{children}</h3>,
+              h4: ({ children }) => <h4 className="text-xs font-semibold mb-1">{children}</h4>,
+              h5: ({ children }) => <h5 className="text-xs font-semibold mb-1">{children}</h5>,
+              h6: ({ children }) => <h6 className="text-xs font-semibold mb-1">{children}</h6>,
+              ul: ({ children }) => <ul className="list-disc list-inside mb-1">{children}</ul>,
+              ol: ({ children }) => <ol className="list-decimal list-inside mb-1">{children}</ol>,
+              li: ({ children }) => <li className="mb-0">{children}</li>,
+              code: ({ children }) => <code className="bg-gray-100 px-1 rounded text-xs">{children}</code>,
+              strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+              em: ({ children }) => <em className="italic">{children}</em>,
+            }}
+          >
+            {task.description}
+          </ReactMarkdown>
+        </div>
       )}
 
       {/* Creator Information */}
