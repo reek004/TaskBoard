@@ -11,6 +11,7 @@ export interface User {
     description: string;
     priority: 'low' | 'medium' | 'high';
     assignees: User[];
+    creator: User;
     dueDate?: Date;
     createdAt: Date;
     updatedAt: Date;
@@ -63,7 +64,7 @@ export interface User {
     title: string;
     description?: string;
     priority: Priority;
-    assignees: string[];
+    assignees: User[];
     dueDate?: Date;
   }
   

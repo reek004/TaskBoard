@@ -22,7 +22,11 @@ const BoardView: React.FC = () => {
   }, []);
 
   const loadBoards = () => {
-    setBoards(getBoards());
+    console.log('🔃 BoardView: Loading boards...');
+    const boardsData = getBoards();
+    console.log('📊 BoardView: Received boards data:', boardsData);
+    console.log('📊 BoardView: Number of boards:', boardsData.length);
+    setBoards(boardsData);
   };
 
   const filteredBoards = boards.filter(board =>

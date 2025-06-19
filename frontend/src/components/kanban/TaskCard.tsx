@@ -3,6 +3,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { Task } from '../../types';
 import { format, isToday, isTomorrow, isPast } from 'date-fns';
+import { Calendar, User as UserIcon, Flag } from 'lucide-react';
 
 interface TaskCardProps {
   task: Task;
@@ -27,19 +28,19 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return '#ef4444'; // red-500
-      case 'medium': return '#f59e0b'; // amber-500
-      case 'low': return '#10b981'; // emerald-500
-      default: return '#6b7280'; // gray-500
+      case 'high': return 'bg-red-100 border-red-200 text-red-800';
+      case 'medium': return 'bg-yellow-100 border-yellow-200 text-yellow-800';
+      case 'low': return 'bg-green-100 border-green-200 text-green-800';
+      default: return 'bg-gray-100 border-gray-200 text-gray-800';
     }
   };
 
-  const getPriorityBadgeClass = (priority: string) => {
+  const getPriorityIcon = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-500 text-white';
-      case 'medium': return 'bg-amber-500 text-white';
-      case 'low': return 'bg-emerald-500 text-white';
-      default: return 'bg-gray-500 text-white';
+      case 'high': return 'text-red-600';
+      case 'medium': return 'text-yellow-600';
+      case 'low': return 'text-green-600';
+      default: return 'text-gray-600';
     }
   };
 
@@ -51,12 +52,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
 
   const getDueDateStyle = (date: Date) => {
     if (isPast(date) && !isToday(date)) {
-      return 'text-red-600 bg-red-50';
+      return 'text-red-600 bg-red-50 border-red-200';
     }
     if (isToday(date)) {
-      return 'text-orange-600 bg-orange-50';
+      return 'text-orange-600 bg-orange-50 border-orange-200';
     }
-    return 'text-gray-600 bg-gray-50';
+    return 'text-gray-600 bg-gray-50 border-gray-200';
   };
 
   return (
@@ -66,75 +67,98 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
       {...attributes}
       {...listeners}
       onClick={() => onClick(task)}
-      className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer group p-4"
+      className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer group p-4 border border-gray-100"
     >
-      {/* Priority Indicator */}
-      <div className={`w-full h-1 rounded-full mb-3 ${getPriorityColor(task.priority)}`} />
+      {/* Header with Title and Priority */}
+      <div className="flex items-start justify-between mb-3">
+        <h3 className="text-sm font-semibold text-gray-900 leading-5 group-hover:text-gray-700 transition-colors break-words overflow-wrap-anywhere flex-1 mr-2">
+          {task.title}
+        </h3>
+        <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border ${getPriorityColor(task.priority)} flex-shrink-0`}>
+          <Flag className={`w-3 h-3 ${getPriorityIcon(task.priority)}`} />
+          <span className="capitalize">{task.priority}</span>
+        </div>
+      </div>
 
-      {/* Task Title */}
-      <h3 className="text-sm font-semibold text-gray-900 mb-2 leading-5 group-hover:text-gray-700 transition-colors">
-        {task.title}
-      </h3>
-
-      {/* Task Description */}
+      {/* Description */}
       {task.description && (
-        <p className="text-xs text-gray-600 mb-3 line-clamp-2 leading-4">
+        <p className="text-xs text-gray-600 mb-3 line-clamp-2 leading-4 break-words">
           {task.description}
         </p>
+      )}
+
+      {/* Creator Information */}
+      <div className="flex items-center gap-2 mb-3 text-xs text-gray-500">
+        <UserIcon className="w-3 h-3" />
+        <span>Created by {task.creator.name}</span>
+      </div>
+
+      {/* Due Date */}
+      {task.dueDate && (
+        <div className="mb-3">
+          <div className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium border ${getDueDateStyle(task.dueDate)}`}>
+            <Calendar className="w-3 h-3" />
+            <span>Due: {formatDueDate(task.dueDate)}</span>
+          </div>
+        </div>
       )}
 
       {/* Tags */}
       {task.tags && task.tags.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-3">
-          {task.tags.slice(0, 3).map((tag, index) => (
+          {task.tags.slice(0, 2).map((tag, index) => (
             <span
               key={index}
-              className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 shadow-sm"
+              className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200"
             >
               {tag}
             </span>
           ))}
-          {task.tags.length > 3 && (
-            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 shadow-sm">
-              +{task.tags.length - 3}
+          {task.tags.length > 2 && (
+            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+              +{task.tags.length - 2}
             </span>
           )}
         </div>
       )}
 
-      {/* Due Date */}
-      {task.dueDate && (
-        <div className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium mb-3 ${getDueDateStyle(task.dueDate)}`}>
-          {formatDueDate(task.dueDate)}
-        </div>
-      )}
-
-      {/* Footer */}
-      <div className="flex items-center justify-between mt-3">
-        {/* Assignees */}
-        <div className="flex -space-x-1">
-          {task.assignees.slice(0, 2).map((assignee) => (
-            <img
-              key={assignee.id}
-              src={assignee.avatar}
-              alt={assignee.name}
-              className="w-6 h-6 rounded-full shadow-md ring-2 ring-white"
-              title={assignee.name}
-            />
-          ))}
-          {task.assignees.length > 2 && (
-            <div className="w-6 h-6 rounded-full bg-gray-200 shadow-md ring-2 ring-white flex items-center justify-center">
-              <span className="text-xs text-gray-600 font-medium">
-                +{task.assignees.length - 2}
-              </span>
+      {/* Assigned To Section */}
+      <div className="border-t border-gray-100 pt-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-gray-500">Assigned to:</span>
+            <div className="flex -space-x-1">
+              {task.assignees.slice(0, 2).map((assignee) => (
+                <img
+                  key={assignee.id}
+                  src={assignee.avatar}
+                  alt={assignee.name}
+                  className="w-5 h-5 rounded-full shadow-sm ring-2 ring-white"
+                  title={assignee.name}
+                />
+              ))}
+              {task.assignees.length > 2 && (
+                <div className="w-5 h-5 rounded-full bg-gray-200 shadow-sm ring-2 ring-white flex items-center justify-center">
+                  <span className="text-xs text-gray-600 font-medium">
+                    +{task.assignees.length - 2}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {task.assignees.length > 0 && (
+            <div className="text-xs text-gray-500">
+              {task.assignees.length === 1 
+                ? task.assignees[0].name
+                : `${task.assignees.length} members`}
             </div>
           )}
         </div>
-
-        {/* Priority Badge */}
-        <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium shadow-sm ${getPriorityBadgeClass(task.priority)}`}>
-          {task.priority}
-        </span>
+        
+        {task.assignees.length === 0 && (
+          <div className="text-xs text-gray-400 italic">Unassigned</div>
+        )}
       </div>
     </div>
   );

@@ -44,6 +44,7 @@ const mockBoards: Board[] = [
             description: '# Homepage Design\n\nCreate a modern, responsive layout for the homepage that includes:\n- Hero section\n- Feature highlights\n- Testimonials\n- CTA sections',
             priority: 'high',
             assignees: [mockUsers[0], mockUsers[1]],
+            creator: mockUsers[0],
             dueDate: new Date('2024-02-01'),
             createdAt: new Date('2024-01-15'),
             updatedAt: new Date('2024-01-15'),
@@ -56,6 +57,7 @@ const mockBoards: Board[] = [
             description: 'Configure development tools and environments for the project.',
             priority: 'medium',
             assignees: [mockUsers[2]],
+            creator: mockUsers[1],
             createdAt: new Date('2024-01-16'),
             updatedAt: new Date('2024-01-16'),
             comments: [],
@@ -74,6 +76,7 @@ const mockBoards: Board[] = [
             description: 'Build responsive navigation with mobile menu support.',
             priority: 'high',
             assignees: [mockUsers[1]],
+            creator: mockUsers[0],
             dueDate: new Date('2024-01-25'),
             createdAt: new Date('2024-01-17'),
             updatedAt: new Date('2024-01-20'),
@@ -93,6 +96,7 @@ const mockBoards: Board[] = [
             description: 'Initial project planning and requirement gathering.',
             priority: 'medium',
             assignees: mockUsers,
+            creator: mockUsers[0],
             createdAt: new Date('2024-01-10'),
             updatedAt: new Date('2024-01-15'),
             comments: [],
@@ -122,6 +126,7 @@ const mockBoards: Board[] = [
             description: 'Implement login, signup, and password reset functionality.',
             priority: 'high',
             assignees: [mockUsers[0]],
+            creator: mockUsers[1],
             dueDate: new Date('2024-02-05'),
             createdAt: new Date('2024-01-12'),
             updatedAt: new Date('2024-01-12'),
@@ -157,11 +162,33 @@ const BOARDS_KEY = 'taskboard_boards';
 const NEXT_ID_KEY = 'taskboard_next_id';
 
 export const initializeData = () => {
-  if (!localStorage.getItem(BOARDS_KEY)) {
+  console.log('🔧 Initializing data...');
+  const existingBoards = localStorage.getItem(BOARDS_KEY);
+  const existingNextId = localStorage.getItem(NEXT_ID_KEY);
+  
+  console.log('📦 Existing boards in localStorage:', existingBoards ? 'Found' : 'Not found');
+  console.log('🔢 Existing next ID in localStorage:', existingNextId);
+  
+  if (!existingBoards) {
+    console.log('💾 Setting initial mock boards to localStorage');
     localStorage.setItem(BOARDS_KEY, JSON.stringify(mockBoards));
+    console.log('✅ Mock boards saved. Count:', mockBoards.length);
   }
-  if (!localStorage.getItem(NEXT_ID_KEY)) {
+  if (!existingNextId) {
+    console.log('💾 Setting initial next ID to localStorage');
     localStorage.setItem(NEXT_ID_KEY, '1000');
+  }
+  
+  // Verify the data was saved
+  const verifyBoards = localStorage.getItem(BOARDS_KEY);
+  console.log('🔍 Verification - boards in localStorage:', verifyBoards ? 'Present' : 'Missing');
+  if (verifyBoards) {
+    try {
+      const parsed = JSON.parse(verifyBoards);
+      console.log('🔍 Verification - parsed boards count:', parsed.length);
+    } catch (e) {
+      console.error('❌ Error parsing boards:', e);
+    }
   }
 };
 
@@ -173,23 +200,36 @@ export const getNextId = (): string => {
 };
 
 export const getBoards = (): Board[] => {
+  console.log('📋 Getting boards from localStorage...');
   const boards = localStorage.getItem(BOARDS_KEY);
+  console.log('📦 Raw boards data:', boards ? 'Found' : 'Not found');
+  
   if (boards) {
-    return JSON.parse(boards).map((board: any) => ({
-      ...board,
-      createdAt: new Date(board.createdAt),
-      updatedAt: new Date(board.updatedAt),
-      columns: board.columns.map((col: any) => ({
-        ...col,
-        tasks: col.tasks.map((task: any) => ({
-          ...task,
-          createdAt: new Date(task.createdAt),
-          updatedAt: new Date(task.updatedAt),
-          dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
+    try {
+      const parsed = JSON.parse(boards);
+      console.log('✅ Successfully parsed boards. Count:', parsed.length);
+      const processedBoards = parsed.map((board: any) => ({
+        ...board,
+        createdAt: new Date(board.createdAt),
+        updatedAt: new Date(board.updatedAt),
+        columns: board.columns.map((col: any) => ({
+          ...col,
+          tasks: col.tasks.map((task: any) => ({
+            ...task,
+            createdAt: new Date(task.createdAt),
+            updatedAt: new Date(task.updatedAt),
+            dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
+          })),
         })),
-      })),
-    }));
+      }));
+      console.log('🔄 Processed boards count:', processedBoards.length);
+      return processedBoards;
+    } catch (e) {
+      console.error('❌ Error parsing boards from localStorage:', e);
+      return [];
+    }
   }
+  console.log('⚠️ No boards found in localStorage, returning empty array');
   return [];
 };
 
@@ -315,7 +355,7 @@ export const deleteColumn = (boardId: string, columnId: string): boolean => {
   return true;
 };
 
-export const createTask = (boardId: string, columnId: string, data: CreateTaskData): Task | null => {
+export const createTask = (boardId: string, columnId: string, data: CreateTaskData, creator: User): Task | null => {
   const boards = getBoards();
   const board = boards.find(b => b.id === boardId);
   
@@ -324,16 +364,13 @@ export const createTask = (boardId: string, columnId: string, data: CreateTaskDa
   const column = board.columns.find(col => col.id === columnId);
   if (!column) return null;
   
-  const assignees = data.assignees.map(id => 
-    mockUsers.find(user => user.id === id) || mockUsers[0]
-  );
-  
   const newTask: Task = {
     id: getNextId(),
     title: data.title,
     description: data.description || '',
     priority: data.priority,
-    assignees,
+    assignees: data.assignees,
+    creator: creator,
     dueDate: data.dueDate,
     createdAt: new Date(),
     updatedAt: new Date(),
