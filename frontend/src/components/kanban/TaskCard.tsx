@@ -72,8 +72,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
       {/* Header with Title and Priority */}
       <div className="flex items-start justify-between mb-3">
         <h3 className="text-sm font-semibold text-gray-900 leading-5 group-hover:text-gray-700 transition-colors break-words overflow-wrap-anywhere flex-1 mr-2">
-          {task.title}
-        </h3>
+        {task.title}
+      </h3>
         <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border ${getPriorityColor(task.priority)} flex-shrink-0`}>
           <Flag className={`w-3 h-3 ${getPriorityIcon(task.priority)}`} />
           <span className="capitalize">{task.priority}</span>
@@ -127,21 +127,21 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium text-gray-500">Assigned to:</span>
-            <div className="flex -space-x-1">
-              {task.assignees.slice(0, 2).map((assignee) => (
-                <img
-                  key={assignee.id}
-                  src={assignee.avatar}
-                  alt={assignee.name}
+        <div className="flex -space-x-1">
+          {task.assignees.slice(0, 2).map((assignee) => (
+            <img
+              key={assignee.id}
+              src={assignee.avatar}
+              alt={assignee.name}
                   className="w-5 h-5 rounded-full shadow-sm ring-2 ring-white"
-                  title={assignee.name}
-                />
-              ))}
-              {task.assignees.length > 2 && (
+              title={assignee.name}
+            />
+          ))}
+          {task.assignees.length > 2 && (
                 <div className="w-5 h-5 rounded-full bg-gray-200 shadow-sm ring-2 ring-white flex items-center justify-center">
-                  <span className="text-xs text-gray-600 font-medium">
-                    +{task.assignees.length - 2}
-                  </span>
+              <span className="text-xs text-gray-600 font-medium">
+                +{task.assignees.length - 2}
+              </span>
                 </div>
               )}
             </div>
@@ -155,7 +155,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
             </div>
           )}
         </div>
-        
+
         {task.assignees.length === 0 && (
           <div className="text-xs text-gray-400 italic">Unassigned</div>
         )}

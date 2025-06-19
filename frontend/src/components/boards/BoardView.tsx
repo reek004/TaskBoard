@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getBoards, createBoard, deleteBoard, updateBoard } from '../../utils/data';
@@ -6,6 +6,7 @@ import type { Board, CreateBoardData } from '../../types';
 import { Plus, Search, MoreVertical, Trash2, Edit3, Kanban, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import BoardModal from './BoardModal';
+import DropdownPortal from '../common/DropdownPortal';
 
 const BoardView: React.FC = () => {
   const [boards, setBoards] = useState<Board[]>([]);
@@ -18,6 +19,7 @@ const BoardView: React.FC = () => {
     description: '',
   });
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const triggerRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
   const { user, logout } = useAuth();
 
   useEffect(() => {
@@ -255,37 +257,44 @@ const BoardView: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-right">
                           <div className="relative">
                             <button
+                              ref={(el) => {
+                                triggerRefs.current[board.id] = el;
+                              }}
                               onClick={() => setActiveDropdown(activeDropdown === board.id ? null : board.id)}
                               className="inline-flex items-center p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                             >
                               <MoreVertical size={16} />
                             </button>
-                            {activeDropdown === board.id && (
-                              <div className="absolute right-0 top-10 bg-white rounded-lg shadow-xl py-1 z-10 min-w-[120px] border border-gray-100">
-                                <Link
-                                  to={`/board/${board.id}`}
-                                  onClick={() => setActiveDropdown(null)}
-                                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                >
-                                  <Eye size={14} />
-                                  View
-                                </Link>
-                                <button
-                                  onClick={() => handleEditBoard(board)}
-                                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                >
-                                  <Edit3 size={14} />
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteBoard(board.id)}
-                                  className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                                >
-                                  <Trash2 size={14} />
-                                  Delete
-                                </button>
-                              </div>
-                            )}
+                            
+                            <DropdownPortal
+                              isOpen={activeDropdown === board.id}
+                              triggerRef={{ current: triggerRefs.current[board.id] }}
+                              onClose={() => setActiveDropdown(null)}
+                              className="py-1"
+                            >
+                              <Link
+                                to={`/board/${board.id}`}
+                                onClick={() => setActiveDropdown(null)}
+                                className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              >
+                                <Eye size={14} />
+                                View
+                              </Link>
+                              <button
+                                onClick={() => handleEditBoard(board)}
+                                className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              >
+                                <Edit3 size={14} />
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteBoard(board.id)}
+                                className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                              >
+                                <Trash2 size={14} />
+                                Delete
+                              </button>
+                            </DropdownPortal>
                           </div>
                         </td>
                       </tr>
@@ -335,14 +344,6 @@ const BoardView: React.FC = () => {
         onSubmit={handleCreateBoard}
         onChange={setCreateFormData}
       />
-
-      {/* Click outside to close dropdown */}
-      {activeDropdown && (
-        <div
-          className="fixed inset-0 z-0"
-          onClick={() => setActiveDropdown(null)}
-        />
-      )}
     </div>
   );
 };

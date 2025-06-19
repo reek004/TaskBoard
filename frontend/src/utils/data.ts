@@ -117,7 +117,7 @@ const mockBoards: Board[] = [
     columns: [
       {
         id: 'col-4',
-        title: 'Backlog',
+        title: 'To Do',
         order: 0,
         tasks: [
           {
@@ -137,22 +137,16 @@ const mockBoards: Board[] = [
       },
       {
         id: 'col-5',
-        title: 'Development',
+        title: 'In Progress',
         order: 1,
         tasks: [],
       },
       {
         id: 'col-6',
-        title: 'Testing',
+        title: 'Done',
         order: 2,
         tasks: [],
-      },
-      {
-        id: 'col-7',
-        title: 'Deployed',
-        order: 3,
-        tasks: [],
-      },
+      }
     ],
   },
 ];
