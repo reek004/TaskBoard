@@ -288,7 +288,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
               </button>
               
               {showAssigneeDropdown && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-10 max-h-48 overflow-y-auto">
+                <div className="absolute bottom-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-10 max-h-48 overflow-y-auto">
                   {mockUsers.map((user) => {
                     const isAssigned = formData.assignees.some(assignee => assignee.id === user.id);
                     return (
