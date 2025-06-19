@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import type { Task, Priority } from '../../types';
-import { mockUsers } from '../../utils/data';
+import { mockUsers, addComment } from '../../utils/data';
+import { useAuth } from '../../context/AuthContext';
 import { 
   X, 
   Calendar, 
@@ -12,7 +13,8 @@ import {
   Save,
   Trash2,
   MessageCircle,
-  Send
+  Send,
+  ChevronDown
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -22,6 +24,7 @@ interface TaskDetailModalProps {
   onClose: () => void;
   onUpdate: (taskId: string, updates: Partial<Task>) => void;
   onDelete: (taskId: string) => void;
+  boardId: string;
 }
 
 const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
@@ -30,7 +33,9 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   onClose,
   onUpdate,
   onDelete,
+  boardId,
 }) => {
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     title: task.title,
@@ -41,6 +46,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   });
   const [showMarkdownPreview, setShowMarkdownPreview] = useState(false);
   const [newComment, setNewComment] = useState('');
+  const [showPriorityDropdown, setShowPriorityDropdown] = useState(false);
 
   useEffect(() => {
     setEditData({
@@ -76,10 +82,14 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
 
   const handleAddComment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newComment.trim()) {
-      // In a real app, this would be handled by the parent component
-      // For now, we'll just reset the comment field
-      setNewComment('');
+    if (newComment.trim() && user) {
+      const comment = addComment(boardId, task.id, newComment, user);
+      if (comment) {
+        // Update the task with the new comment
+        const updatedComments = [...task.comments, comment];
+        onUpdate(task.id, { comments: updatedComments });
+        setNewComment('');
+      }
     }
   };
 
@@ -89,6 +99,24 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
       case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'low': return 'bg-green-100 text-green-800 border-green-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getPriorityLabel = (priority: Priority) => {
+    switch (priority) {
+      case 'high': return 'High';
+      case 'medium': return 'Medium';
+      case 'low': return 'Low';
+      default: return 'Medium';
+    }
+  };
+
+  const getPriorityIconColor = (priority: Priority) => {
+    switch (priority) {
+      case 'high': return 'text-red-600';
+      case 'medium': return 'text-yellow-600';
+      case 'low': return 'text-green-600';
+      default: return 'text-yellow-600';
     }
   };
 
@@ -145,14 +173,14 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                 >
                   <Trash2 size={20} />
                 </button>
+                <button
+                  onClick={onClose}
+                  className="p-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 hover:scale-105"
+                >
+                  <X size={20} />
+                </button>
               </>
             )}
-            <button
-              onClick={onClose}
-              className="p-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 hover:scale-105"
-            >
-              <X size={20} />
-            </button>
           </div>
         </div>
 
@@ -269,15 +297,38 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                   Priority
                 </label>
                 {isEditing ? (
-                  <select
-                    value={editData.priority}
-                    onChange={(e) => setEditData({ ...editData, priority: e.target.value as Priority })}
-                    className="w-full px-4 py-4 bg-white border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all outline-none"
-                  >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                  </select>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setShowPriorityDropdown(!showPriorityDropdown)}
+                      className="w-full px-4 py-4 bg-white border-2 border-transparent rounded-xl text-left flex items-center justify-between hover:border-gray-300 focus:border-blue-500 focus:bg-white transition-all outline-none"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Flag className={`w-4 h-4 ${getPriorityIconColor(editData.priority as Priority)}`} />
+                        <span className="text-base">{getPriorityLabel(editData.priority as Priority)}</span>
+                      </div>
+                      <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showPriorityDropdown ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {showPriorityDropdown && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-10 overflow-hidden">
+                        {(['high', 'medium', 'low'] as Priority[]).map((priority) => (
+                          <button
+                            key={priority}
+                            type="button"
+                            onClick={() => {
+                              setEditData({ ...editData, priority });
+                              setShowPriorityDropdown(false);
+                            }}
+                            className="w-full px-4 py-4 text-left hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                          >
+                            <Flag className={`w-4 h-4 ${getPriorityIconColor(priority)}`} />
+                            <span className="text-base">{getPriorityLabel(priority)}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <div className="flex items-center gap-2 px-4 py-3 bg-white rounded-xl">
                     <Flag className={`w-4 h-4 ${task.priority === 'high' ? 'text-red-600' : task.priority === 'medium' ? 'text-yellow-600' : 'text-green-600'}`} />
@@ -405,6 +456,14 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Backdrop to close dropdown */}
+      {showPriorityDropdown && (
+        <div
+          className="fixed inset-0 z-0"
+          onClick={() => setShowPriorityDropdown(false)}
+        />
+      )}
     </div>
   );
 };

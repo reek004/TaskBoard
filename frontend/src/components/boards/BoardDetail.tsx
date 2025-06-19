@@ -476,6 +476,7 @@ const BoardDetail: React.FC = () => {
           }}
           onUpdate={handleTaskUpdate}
           onDelete={handleTaskDelete}
+          boardId={boardId!}
         />
       )}
     </div>

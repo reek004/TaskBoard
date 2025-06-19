@@ -1,4 +1,4 @@
-import type { Board, Task, Column, User, CreateBoardData, CreateTaskData, CreateColumnData } from '../types';
+import type { Board, Task, Column, User, Comment, CreateBoardData, CreateTaskData, CreateColumnData } from '../types';
 
 // Mock users
 export const mockUsers: User[] = [
@@ -447,4 +447,31 @@ export const moveTask = (boardId: string, taskId: string, sourceColumnId: string
   board.updatedAt = new Date();
   saveBoards(boards);
   return true;
+};
+
+export const addComment = (boardId: string, taskId: string, text: string, author: User): Comment | null => {
+  const boards = getBoards();
+  const board = boards.find(b => b.id === boardId);
+  
+  if (!board) return null;
+  
+  for (const column of board.columns) {
+    const task = column.tasks.find(t => t.id === taskId);
+    if (task) {
+      const newComment: Comment = {
+        id: getNextId(),
+        text: text.trim(),
+        author: author,
+        createdAt: new Date(),
+      };
+      
+      task.comments.push(newComment);
+      task.updatedAt = new Date();
+      board.updatedAt = new Date();
+      saveBoards(boards);
+      return newComment;
+    }
+  }
+  
+  return null;
 }; 
