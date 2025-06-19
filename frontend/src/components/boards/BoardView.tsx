@@ -22,10 +22,10 @@ const BoardView: React.FC = () => {
   }, []);
 
   const loadBoards = () => {
-    console.log('🔃 BoardView: Loading boards...');
+    console.log(' BoardView: Loading boards...');
     const boardsData = getBoards();
-    console.log('📊 BoardView: Received boards data:', boardsData);
-    console.log('📊 BoardView: Number of boards:', boardsData.length);
+    console.log(' BoardView: Received boards data:', boardsData);
+    console.log(' BoardView: Number of boards:', boardsData.length);
     setBoards(boardsData);
   };
 
@@ -118,7 +118,7 @@ const BoardView: React.FC = () => {
                 placeholder="Search boards..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white focus:shadow-md transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-lg hover:border-gray-300 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:shadow-md transition-all outline-none"
               />
             </div>
           </div>
@@ -308,7 +308,7 @@ const BoardView: React.FC = () => {
                   id="boardName"
                   value={createFormData.name}
                   onChange={(e) => setCreateFormData({ ...createFormData, name: e.target.value })}
-                  className="w-full px-4 py-4 bg-gray-50 border-2 border-transparent rounded-xl focus:ring-0 focus:border-blue-500 focus:bg-white transition-all text-base placeholder-gray-400"
+                  className="w-full px-4 py-4 bg-gray-50 border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all text-base placeholder-gray-400 outline-none"
                   placeholder="e.g., Marketing Campaign Q4"
                   required
                 />
@@ -323,7 +323,7 @@ const BoardView: React.FC = () => {
                   id="boardDescription"
                   value={createFormData.description}
                   onChange={(e) => setCreateFormData({ ...createFormData, description: e.target.value })}
-                  className="w-full px-4 py-4 bg-gray-50 border-2 border-transparent rounded-xl focus:ring-0 focus:border-blue-500 focus:bg-white transition-all text-base placeholder-gray-400 resize-none"
+                  className="w-full px-4 py-4 bg-gray-50 border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all text-base placeholder-gray-400 resize-none outline-none"
                   placeholder="Brief description of what this board will be used for..."
                   rows={4}
                 />

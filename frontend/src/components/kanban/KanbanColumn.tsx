@@ -80,12 +80,12 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
                     onChange={(e) => setEditTitle(e.target.value)}
                     onKeyDown={handleKeyPress}
                     onBlur={handleEditSubmit}
-                    className="flex-1 px-3 py-2 text-base font-semibold border border-gray-300 rounded-lg bg-gray-100 min-w-0"
+                    className="flex-1 px-4 py-3 text-base font-semibold bg-gray-50 border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all outline-none min-w-0"
                     autoFocus
                   />
                   <button
                     onClick={handleEditSubmit}
-                    className="px-2 py-2 bg-gray-800 text-white text-xs font-medium rounded-lg hover:bg-gray-900 transition-colors whitespace-nowrap"
+                    className="px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all whitespace-nowrap"
                   >
                     Save
                   </button>

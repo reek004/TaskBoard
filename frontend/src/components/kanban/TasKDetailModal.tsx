@@ -93,34 +93,40 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div className="flex items-center gap-3">
-            {isEditing ? (
-              <input
-                type="text"
-                value={editData.title}
-                onChange={(e) => setEditData({ ...editData, title: e.target.value })}
-                className="text-xl font-semibold border border-gray-300 rounded px-2 py-1 flex-1"
-              />
-            ) : (
-              <h2 className="text-xl font-semibold text-gray-900">{task.title}</h2>
-            )}
+    <div className="fixed inset-0 backdrop-blur-[2px] bg-opacity-40 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-gray-100">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between p-8 border-b border-gray-100">
+          <div className="flex items-center gap-4">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+              <Flag className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={editData.title}
+                  onChange={(e) => setEditData({ ...editData, title: e.target.value })}
+                  className="text-2xl font-bold bg-gray-50 border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all px-3 py-2 outline-none"
+                />
+              ) : (
+                <h2 className="text-2xl font-bold text-gray-900">{task.title}</h2>
+              )}
+              <p className="text-gray-600 mt-1">Task Details</p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {isEditing ? (
               <>
                 <button
                   onClick={handleSave}
-                  className="p-2 text-green-600 hover:bg-green-100 rounded"
+                  className="p-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl transition-all duration-200 hover:scale-105 shadow-lg"
                 >
                   <Save size={20} />
                 </button>
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="p-2 text-gray-400 hover:bg-gray-100 rounded"
+                  className="p-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 hover:scale-105"
                 >
                   <X size={20} />
                 </button>
@@ -129,13 +135,13 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               <>
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="p-2 text-gray-400 hover:bg-gray-100 rounded"
+                  className="p-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 hover:scale-105"
                 >
                   <Edit3 size={20} />
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="p-2 text-red-400 hover:bg-red-100 rounded"
+                  className="p-3 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-200 hover:scale-105"
                 >
                   <Trash2 size={20} />
                 </button>
@@ -143,7 +149,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             )}
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:bg-gray-100 rounded"
+              className="p-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 hover:scale-105"
             >
               <X size={20} />
             </button>
@@ -151,17 +157,20 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="flex h-[calc(90vh-80px)]">
+        <div className="flex h-[calc(90vh-120px)]">
           {/* Main Content */}
-          <div className="flex-1 p-6 overflow-y-auto">
+          <div className="flex-1 p-8 overflow-y-auto space-y-6">
             {/* Description */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-gray-700">Description</h3>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Description
+                <span className="text-gray-400 font-normal ml-2">(optional)</span>
+              </label>
+              <div className="flex items-center justify-between mb-3">
                 {isEditing && editData.description && (
                   <button
                     onClick={() => setShowMarkdownPreview(!showMarkdownPreview)}
-                    className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg transition-all"
                   >
                     {showMarkdownPreview ? <Edit3 size={16} /> : <Eye size={16} />}
                     {showMarkdownPreview ? 'Edit' : 'Preview'}
@@ -171,46 +180,47 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               
               {isEditing ? (
                 showMarkdownPreview ? (
-                  <div className="prose prose-sm max-w-none border border-gray-300 rounded-lg p-3 min-h-[200px]">
+                  <div className="prose prose-sm max-w-none bg-gray-50 border-2 border-transparent rounded-xl p-4 min-h-[200px]">
                     <ReactMarkdown>{editData.description}</ReactMarkdown>
                   </div>
                 ) : (
                   <textarea
                     value={editData.description}
                     onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-                    className="w-full h-48 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="w-full px-4 py-4 bg-gray-50 border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all text-base placeholder-gray-400 resize-none outline-none"
                     placeholder="Add a description... (Markdown supported)"
+                    rows={8}
                   />
                 )
               ) : task.description ? (
-                <div className="prose prose-sm max-w-none">
+                <div className="prose prose-sm max-w-none bg-gray-50 rounded-xl p-4">
                   <ReactMarkdown>{task.description}</ReactMarkdown>
                 </div>
               ) : (
-                <p className="text-gray-500 italic">No description provided</p>
+                <p className="text-gray-500 italic bg-gray-50 rounded-xl p-4">No description provided</p>
               )}
             </div>
 
             {/* Activity/Comments */}
             <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-4">Activity</h3>
+              <h3 className="text-sm font-semibold text-gray-700 mb-4">Activity</h3>
               
               {/* Add Comment */}
-              <form onSubmit={handleAddComment} className="mb-4">
-                <div className="flex gap-3">
+              <form onSubmit={handleAddComment} className="mb-6">
+                <div className="flex gap-4">
                   <div className="flex-1">
                     <textarea
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       placeholder="Write a comment..."
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      className="w-full px-4 py-4 bg-gray-50 border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all text-base placeholder-gray-400 resize-none outline-none"
                       rows={3}
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={!newComment.trim()}
-                    className="self-end p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="self-end px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
                     <Send size={16} />
                   </button>
@@ -221,29 +231,27 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               <div className="space-y-4">
                 {task.comments.length > 0 ? (
                   task.comments.map((comment) => (
-                    <div key={comment.id} className="flex gap-3">
+                    <div key={comment.id} className="flex gap-3 bg-gray-50 rounded-xl p-4">
                       <img
                         src={comment.author.avatar}
                         alt={comment.author.name}
                         className="w-8 h-8 rounded-full"
                       />
                       <div className="flex-1">
-                        <div className="bg-gray-50 rounded-lg p-3">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-medium text-gray-900">
-                              {comment.author.name}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              {format(comment.createdAt, 'MMM d, h:mm a')}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-700">{comment.text}</p>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-sm font-semibold text-gray-900">
+                            {comment.author.name}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {format(comment.createdAt, 'MMM d, h:mm a')}
+                          </span>
                         </div>
+                        <p className="text-sm text-gray-700">{comment.text}</p>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8">
+                  <div className="text-center py-8 bg-gray-50 rounded-xl">
                     <MessageCircle className="w-8 h-8 text-gray-300 mx-auto mb-2" />
                     <p className="text-gray-500 text-sm">No comments yet</p>
                   </div>
@@ -253,41 +261,42 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           </div>
 
           {/* Sidebar */}
-          <div className="w-80 border-l border-gray-200 p-6 bg-gray-50">
+          <div className="w-80 border-l border-gray-100 p-8 bg-gray-50">
             <div className="space-y-6">
               {/* Priority */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Flag size={16} className="inline mr-1" />
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Priority
                 </label>
                 {isEditing ? (
                   <select
                     value={editData.priority}
                     onChange={(e) => setEditData({ ...editData, priority: e.target.value as Priority })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-4 bg-white border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all outline-none"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
                     <option value="high">High</option>
                   </select>
                 ) : (
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(task.priority)}`}>
-                    {task.priority}
-                  </span>
+                  <div className="flex items-center gap-2 px-4 py-3 bg-white rounded-xl">
+                    <Flag className={`w-4 h-4 ${task.priority === 'high' ? 'text-red-600' : task.priority === 'medium' ? 'text-yellow-600' : 'text-green-600'}`} />
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getPriorityColor(task.priority)}`}>
+                      {task.priority}
+                    </span>
+                  </div>
                 )}
               </div>
 
               {/* Assignees */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <UsersIcon size={16} className="inline mr-1" />
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Assignees
                 </label>
                 {isEditing ? (
-                  <div className="space-y-2">
+                  <div className="space-y-3 bg-white rounded-xl p-4 max-h-48 overflow-y-auto">
                     {mockUsers.map((user) => (
-                      <label key={user.id} className="flex items-center gap-2">
+                      <label key={user.id} className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
                         <input
                           type="checkbox"
                           checked={editData.assignees.includes(user.id)}
@@ -307,21 +316,27 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                           className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         />
                         <img src={user.avatar} alt={user.name} className="w-6 h-6 rounded-full" />
-                        <span className="text-sm text-gray-700">{user.name}</span>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                          <div className="text-xs text-gray-500">{user.email}</div>
+                        </div>
                       </label>
                     ))}
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="bg-white rounded-xl p-4 space-y-3">
                     {task.assignees.length > 0 ? (
                       task.assignees.map((assignee) => (
-                        <div key={assignee.id} className="flex items-center gap-2">
+                        <div key={assignee.id} className="flex items-center gap-3">
                           <img
                             src={assignee.avatar}
                             alt={assignee.name}
                             className="w-6 h-6 rounded-full"
                           />
-                          <span className="text-sm text-gray-700">{assignee.name}</span>
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{assignee.name}</div>
+                            <div className="text-xs text-gray-500">{assignee.email}</div>
+                          </div>
                         </div>
                       ))
                     ) : (
@@ -333,31 +348,57 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
 
               {/* Due Date */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Calendar size={16} className="inline mr-1" />
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Due Date
+                  <span className="text-gray-400 font-normal ml-2">(optional)</span>
                 </label>
                 {isEditing ? (
-                  <input
-                    type="date"
-                    value={editData.dueDate}
-                    onChange={(e) => setEditData({ ...editData, dueDate: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                ) : task.dueDate ? (
-                  <p className="text-sm text-gray-700">
-                    {format(task.dueDate, 'MMM d, yyyy')}
-                  </p>
+                  <div className="relative">
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input
+                      type="date"
+                      value={editData.dueDate}
+                      onChange={(e) => setEditData({ ...editData, dueDate: e.target.value })}
+                      className="w-full pl-12 pr-4 py-4 bg-white border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all outline-none"
+                    />
+                  </div>
                 ) : (
-                  <p className="text-sm text-gray-500">No due date</p>
+                  <div className="flex items-center gap-2 px-4 py-3 bg-white rounded-xl">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    {task.dueDate ? (
+                      <span className="text-sm text-gray-700">
+                        {format(task.dueDate, 'MMM d, yyyy')}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-gray-500">No due date</span>
+                    )}
+                  </div>
                 )}
+              </div>
+
+              {/* Created By */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  Created By
+                </label>
+                <div className="flex items-center gap-3 px-4 py-3 bg-white rounded-xl">
+                  <img
+                    src={task.creator.avatar}
+                    alt={task.creator.name}
+                    className="w-6 h-6 rounded-full"
+                  />
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">{task.creator.name}</div>
+                    <div className="text-xs text-gray-500">{task.creator.email}</div>
+                  </div>
+                </div>
               </div>
 
               {/* Metadata */}
               <div className="pt-4 border-t border-gray-200">
-                <div className="space-y-2 text-xs text-gray-500">
-                  <p>Created: {format(task.createdAt, 'MMM d, yyyy h:mm a')}</p>
-                  <p>Updated: {format(task.updatedAt, 'MMM d, yyyy h:mm a')}</p>
+                <div className="space-y-2 text-xs text-gray-500 bg-white rounded-xl p-4">
+                  <p><span className="font-medium">Created:</span> {format(task.createdAt, 'MMM d, yyyy h:mm a')}</p>
+                  <p><span className="font-medium">Updated:</span> {format(task.updatedAt, 'MMM d, yyyy h:mm a')}</p>
                 </div>
               </div>
             </div>

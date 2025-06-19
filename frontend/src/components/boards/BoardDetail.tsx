@@ -362,7 +362,7 @@ const BoardDetail: React.FC = () => {
                 placeholder="Search tasks..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white focus:shadow-md transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-lg hover:border-gray-300 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:shadow-md transition-all outline-none"
               />
             </div>
             
@@ -371,7 +371,7 @@ const BoardDetail: React.FC = () => {
               <select
                 value={filterPriority}
                 onChange={(e) => setFilterPriority(e.target.value as Priority | 'all')}
-                className="px-4 py-3 bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white focus:shadow-md transition-all"
+                className="px-4 py-3 bg-gray-50 rounded-lg hover:border-gray-300 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:shadow-md transition-all outline-none"
               >
                 <option value="all">All Priorities</option>
                 <option value="high">High Priority</option>
@@ -421,13 +421,13 @@ const BoardDetail: React.FC = () => {
                         value={newColumnTitle}
                         onChange={(e) => setNewColumnTitle(e.target.value)}
                         placeholder="Enter column title"
-                        className="w-full px-3 py-2 bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white focus:shadow-md transition-all"
+                        className="w-full px-3 py-2 bg-gray-50 rounded-lg hover:border-gray-300 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:shadow-md transition-all outline-none"
                         autoFocus
                       />
                       <div className="flex gap-2">
                         <button
                           type="submit"
-                          className="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 shadow-md"
+                          className="px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-semibold rounded-md shadow-lg hover:shadow-xl transition-all duration-200  whitespace-nowrap"
                         >
                           Add Column
                         </button>
@@ -437,7 +437,7 @@ const BoardDetail: React.FC = () => {
                             setShowAddColumn(false);
                             setNewColumnTitle('');
                           }}
-                          className="px-3 py-2 text-gray-600 text-sm rounded-lg hover:bg-gray-100 shadow-md bg-gray-50"
+                          className="px-4 py-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold transition-all duration-200  text-sm whitespace-nowrap"
                         >
                           Cancel
                         </button>
