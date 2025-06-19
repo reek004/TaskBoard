@@ -6,6 +6,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './components/auth/LoginPage';
 import SignupPage from './components/auth/SignupPage';
 import BoardView from './components/boards/BoardView';
+import BoardDetail from './components/boards/BoardDetail';
 
 
 function App() {
@@ -31,7 +32,15 @@ function App() {
                   <BoardView />
                 </ProtectedRoute>
               } 
-            />            
+            /> 
+            <Route 
+              path="/board/:boardId" 
+              element={
+                <ProtectedRoute>
+                  <BoardDetail/>
+                </ProtectedRoute>
+              } 
+            />           
             {/* Catch all route */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

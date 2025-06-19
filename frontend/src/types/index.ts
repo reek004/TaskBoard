@@ -16,6 +16,7 @@ export interface User {
     updatedAt: Date;
     comments: Comment[];
     attachments: string[];
+    tags?: string[];
   }
   
   export interface Comment {

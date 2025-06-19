@@ -1,0 +1,488 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  closestCorners,
+} from '@dnd-kit/core';
+import type {
+  DragEndEvent,
+  DragOverEvent,
+  DragStartEvent,
+} from '@dnd-kit/core';
+import { arrayMove } from '@dnd-kit/sortable';
+import { 
+  getBoardById, 
+  updateBoard, 
+  createColumn, 
+  updateColumn, 
+  deleteColumn,
+  createTask,
+  updateTask,
+  deleteTask,
+  moveTask
+} from '../../utils/data';
+import type { Board, Task, Column, CreateTaskData, CreateColumnData, Priority } from '../../types';
+import KanbanColumn from '../kanban/KanbanColumn';
+import TaskCard from '../kanban/TaskCard';
+import TaskDetailModal from '../kanban/TasKDetailModal';
+import { useAuth } from '../../context/AuthContext';
+import { 
+  ArrowLeft, 
+  Search, 
+  Filter, 
+  Plus, 
+  Settings,
+  Users,
+  Kanban
+} from 'lucide-react';
+
+const BoardDetail: React.FC = () => {
+  const { boardId } = useParams<{ boardId: string }>();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  
+  const [board, setBoard] = useState<Board | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterPriority, setFilterPriority] = useState<Priority | 'all'>('all');
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [showAddColumn, setShowAddColumn] = useState(false);
+  const [newColumnTitle, setNewColumnTitle] = useState('');
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
+
+  useEffect(() => {
+    if (boardId) {
+      loadBoard();
+    }
+  }, [boardId]);
+
+  const loadBoard = () => {
+    if (!boardId) return;
+    
+    const boardData = getBoardById(boardId);
+    if (!boardData) {
+      navigate('/');
+      return;
+    }
+    
+    setBoard(boardData);
+    setLoading(false);
+  };
+
+  const handleTaskClick = (task: Task) => {
+    setSelectedTask(task);
+    setShowTaskModal(true);
+  };
+
+  const handleTaskUpdate = (taskId: string, updates: Partial<Task>) => {
+    if (!boardId) return;
+    
+    updateTask(boardId, taskId, updates);
+    loadBoard();
+    
+    // Update the selected task if it's the one being updated
+    if (selectedTask && selectedTask.id === taskId) {
+      setSelectedTask({ ...selectedTask, ...updates });
+    }
+  };
+
+  const handleTaskDelete = (taskId: string) => {
+    if (!boardId) return;
+    
+    deleteTask(boardId, taskId);
+    loadBoard();
+  };
+
+  const handleAddTask = (columnId: string, taskData: CreateTaskData) => {
+    if (!boardId) return;
+    
+    createTask(boardId, columnId, taskData);
+    loadBoard();
+  };
+
+  const handleAddColumn = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!boardId || !newColumnTitle.trim()) return;
+    
+    const columnData: CreateColumnData = {
+      title: newColumnTitle.trim(),
+    };
+    
+    createColumn(boardId, columnData);
+    setNewColumnTitle('');
+    setShowAddColumn(false);
+    loadBoard();
+  };
+
+  const handleEditColumn = (columnId: string, title: string) => {
+    if (!boardId) return;
+    
+    updateColumn(boardId, columnId, { title });
+    loadBoard();
+  };
+
+  const handleDeleteColumn = (columnId: string) => {
+    if (!boardId) return;
+    
+    deleteColumn(boardId, columnId);
+    loadBoard();
+  };
+
+  const getFilteredTasks = (tasks: Task[]): Task[] => {
+    return tasks.filter(task => {
+      const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           task.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesPriority = filterPriority === 'all' || task.priority === filterPriority;
+      return matchesSearch && matchesPriority;
+    });
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over || !board) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    // Find the active task and its column
+    let activeTask: Task | null = null;
+    let activeColumn: Column | null = null;
+    
+    for (const column of board.columns) {
+      const task = column.tasks.find(t => t.id === activeId);
+      if (task) {
+        activeTask = task;
+        activeColumn = column;
+        break;
+      }
+    }
+
+    if (!activeTask || !activeColumn) return;
+
+    // Find the over column
+    let overColumn: Column | null = null;
+    
+    // Check if over a column directly
+    overColumn = board.columns.find(col => col.id === overId) || null;
+    
+    // If not over a column, check if over a task
+    if (!overColumn) {
+      for (const column of board.columns) {
+        if (column.tasks.find(t => t.id === overId)) {
+          overColumn = column;
+          break;
+        }
+      }
+    }
+
+    if (!overColumn || activeColumn.id === overColumn.id) return;
+
+    // Move task to new column (at the end for now)
+    if (boardId) {
+      moveTask(boardId, activeId, activeColumn.id, overColumn.id, overColumn.tasks.length);
+      loadBoard();
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveId(null);
+    
+    const { active, over } = event;
+    if (!over || !board || !boardId) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    if (activeId === overId) return;
+
+    // Find the active task and its column
+    let activeTask: Task | null = null;
+    let activeColumn: Column | null = null;
+    let activeIndex = -1;
+    
+    for (const column of board.columns) {
+      const index = column.tasks.findIndex(t => t.id === activeId);
+      if (index !== -1) {
+        activeTask = column.tasks[index];
+        activeColumn = column;
+        activeIndex = index;
+        break;
+      }
+    }
+
+    if (!activeTask || !activeColumn) return;
+
+    // Find the over task and its position
+    let overColumn: Column | null = null;
+    let overIndex = -1;
+    
+    for (const column of board.columns) {
+      const index = column.tasks.findIndex(t => t.id === overId);
+      if (index !== -1) {
+        overColumn = column;
+        overIndex = index;
+        break;
+      }
+    }
+
+    // If same column, reorder tasks
+    if (overColumn && activeColumn.id === overColumn.id) {
+      const newTasks = arrayMove(activeColumn.tasks, activeIndex, overIndex);
+      // backend
+      loadBoard();
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!board) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Board not found</h2>
+          <Link to="/" className="text-blue-600 hover:text-blue-700">
+            Return to boards
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const activeTask = activeId ? 
+    board.columns.flatMap(col => col.tasks).find(task => task.id === activeId) : null;
+
+  return (
+    <div className="min-h-screen  bg-gray-50">
+      {/* Fixed Navbar */}
+      <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
+        <div className="max-w-full px-6 lg:px-8">
+          <div className="flex justify-between items-center h-22">
+            <div className="flex items-center gap-6">
+              <Link
+                to="/"
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
+              >
+                <ArrowLeft size={20} />
+              </Link>
+              <div className="flex items-center gap-4">
+                <div className="inline-flex items-center justify-center w-10 h-10 bg-blue-600 rounded-lg">
+                  <Kanban className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-m text-center font-bold text-gray-900">TaskBoard</h1>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-6">
+              {/* Team Members */}
+              <div className="flex items-center gap-3">
+                <Users size={16} className="text-gray-400" />
+                <div className="flex -space-x-2">
+                  {board.teamMembers.slice(0, 3).map((member) => (
+                    <img
+                      key={member.id}
+                      src={member.avatar}
+                      alt={member.name}
+                      className="w-8 h-8 rounded-full shadow-sm"
+                      title={member.name}
+                    />
+                  ))}
+                  {board.teamMembers.length > 3 && (
+                    <div className="w-8 h-8 rounded-full bg-gray-200 shadow-sm flex items-center justify-center">
+                      <span className="text-xs text-gray-600">
+                        +{board.teamMembers.length - 3}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <img
+                  src={user?.avatar}
+                  alt={user?.name}
+                  className="w-8 h-8 rounded-full shadow-sm"
+                />
+                <span className="text-sm font-medium text-gray-700">{user?.name}</span>
+              </div>
+              <button
+                onClick={logout}
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Board Header - Below Fixed Navbar */}
+      <div className="pt-16 bg-white shadow-md">
+        <div className="max-w-full px-6 lg:px-8 py-2">
+
+        
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white shadow-md">
+        <div className="max-w-full px-6 lg:px-8 py-6">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                type="text"
+                placeholder="Search tasks..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white focus:shadow-md transition-all"
+              />
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Filter size={16} className="text-gray-400" />
+              <select
+                value={filterPriority}
+                onChange={(e) => setFilterPriority(e.target.value as Priority | 'all')}
+                className="px-4 py-3 bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white focus:shadow-md transition-all"
+              >
+                <option value="all">All Priorities</option>
+                <option value="high">High Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="low">Low Priority</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Kanban Board */}
+      <div className="min-h-screen bg-gray-50 p-3 sm:p-6">
+      <div className="max-w-full pb-8">
+              <h2 className="text-3xl font-bold text-gray-900">{board.name}</h2>
+              {board.description && (
+                <p className="text-base text-gray-600 mt-1">{board.description}</p>
+              )}
+            </div>
+        <div className="w-full">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCorners}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 sm:overflow-x-auto pb-6">
+              {board.columns
+                .sort((a, b) => a.order - b.order)
+                .map((column) => {
+                  const filteredTasks = getFilteredTasks(column.tasks);
+                  return (
+                    <KanbanColumn
+                      key={column.id}
+                      column={column}
+                      tasks={filteredTasks}
+                      onTaskClick={handleTaskClick}
+                      onAddTask={handleAddTask}
+                      onEditColumn={handleEditColumn}
+                      onDeleteColumn={handleDeleteColumn}
+                    />
+                  );
+                })}
+
+              {/* Add Column */}
+              <div className="flex-shrink-0 w-full sm:w-80">
+                {showAddColumn ? (
+                  <div className="bg-white rounded-lg shadow-md p-4">
+                    <form onSubmit={handleAddColumn} className="space-y-3">
+                      <input
+                        type="text"
+                        value={newColumnTitle}
+                        onChange={(e) => setNewColumnTitle(e.target.value)}
+                        placeholder="Enter column title"
+                        className="w-full px-3 py-2 bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white focus:shadow-md transition-all"
+                        autoFocus
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          type="submit"
+                          className="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 shadow-md"
+                        >
+                          Add Column
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowAddColumn(false);
+                            setNewColumnTitle('');
+                          }}
+                          className="px-3 py-2 text-gray-600 text-sm rounded-lg hover:bg-gray-100 shadow-md bg-gray-50"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowAddColumn(true)}
+                    className="w-full h-fit p-4 sm:p-6 text-sm sm:text-base bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-gray-600 shadow-md hover:shadow-lg"
+                  >
+                    <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2 inline" />
+                    Add another list
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <DragOverlay>
+              {activeTask ? (
+                <TaskCard task={activeTask} onClick={() => {}} />
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+        </div>
+      </div>
+
+      {/* Task Detail Modal */}
+      {selectedTask && (
+        <TaskDetailModal
+          task={selectedTask}
+          isOpen={showTaskModal}
+          onClose={() => {
+            setShowTaskModal(false);
+            setSelectedTask(null);
+          }}
+          onUpdate={handleTaskUpdate}
+          onDelete={handleTaskDelete}
+        />
+      )}
+    </div>
+  );
+};
+
+export default BoardDetail; 

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getBoards, createBoard, deleteBoard } from '../../utils/data';
 import type { Board, CreateBoardData } from '../../types';
-import { Plus, Search, Users, Calendar, MoreVertical, Trash2, Edit3, Kanban, Eye } from 'lucide-react';
+import { Plus, Search, MoreVertical, Trash2, Edit3, Kanban, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 
 const BoardView: React.FC = () => {
