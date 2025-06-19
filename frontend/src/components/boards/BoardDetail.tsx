@@ -26,7 +26,8 @@ import {
   moveTask,
   reorderTasksInColumn
 } from '../../utils/data';
-import type { Board, Task, Column, CreateTaskData, CreateColumnData, Priority } from '../../types';
+import type { Board, Task, Column, CreateTaskData, CreateColumnData, Priority, User } from '../../types';
+import { mockUsers } from '../../utils/data';
 import KanbanColumn from '../kanban/KanbanColumn';
 import TaskCard from '../kanban/TaskCard';
 import TaskDetailModal from '../kanban/TasKDetailModal';
@@ -37,8 +38,22 @@ import {
   Filter, 
   Plus, 
   Users,
-  Kanban
+  Kanban,
+  Flag,
+  ChevronDown,
+  Calendar,
+  User as UserIcon,
+  X
 } from 'lucide-react';
+import { isToday, isTomorrow, isPast, isThisWeek, parseISO, format } from 'date-fns';
+import { 
+  getPriorityLabel, 
+  getPriorityIconColor, 
+  getDueDateLabel, 
+  getDueDateIconColor, 
+  getAssigneeLabel,
+  type DueDateFilter 
+} from '../../utils/taskUtils';
 
 const BoardDetail: React.FC = () => {
   const { boardId } = useParams<{ boardId: string }>();
@@ -49,11 +64,16 @@ const BoardDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPriority, setFilterPriority] = useState<Priority | 'all'>('all');
+  const [filterDueDate, setFilterDueDate] = useState<DueDateFilter>('all');
+  const [filterAssignee, setFilterAssignee] = useState<string>('all');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [showAddColumn, setShowAddColumn] = useState(false);
   const [newColumnTitle, setNewColumnTitle] = useState('');
+  const [showPriorityDropdown, setShowPriorityDropdown] = useState(false);
+  const [showDueDateDropdown, setShowDueDateDropdown] = useState(false);
+  const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -146,7 +166,37 @@ const BoardDetail: React.FC = () => {
       const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            task.description.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesPriority = filterPriority === 'all' || task.priority === filterPriority;
-      return matchesSearch && matchesPriority;
+      
+      // Due date filter
+      let matchesDueDate = true;
+      if (filterDueDate !== 'all') {
+        switch (filterDueDate) {
+          case 'overdue':
+            matchesDueDate = task.dueDate ? isPast(task.dueDate) && !isToday(task.dueDate) : false;
+            break;
+          case 'today':
+            matchesDueDate = task.dueDate ? isToday(task.dueDate) : false;
+            break;
+          case 'tomorrow':
+            matchesDueDate = task.dueDate ? isTomorrow(task.dueDate) : false;
+            break;
+          case 'this-week':
+            matchesDueDate = task.dueDate ? isThisWeek(task.dueDate) : false;
+            break;
+          case 'no-date':
+            matchesDueDate = !task.dueDate;
+            break;
+          default:
+            matchesDueDate = true;
+        }
+      }
+      
+      // Assignee filter
+      const matchesAssignee = filterAssignee === 'all' || 
+        (filterAssignee === 'unassigned' ? task.assignees.length === 0 : 
+         task.assignees.some(assignee => assignee.id === filterAssignee));
+      
+      return matchesSearch && matchesPriority && matchesDueDate && matchesAssignee;
     });
   };
 
@@ -250,6 +300,15 @@ const BoardDetail: React.FC = () => {
       loadBoard();
     }
   };
+
+  const clearAllFilters = () => {
+    setFilterPriority('all');
+    setFilterDueDate('all');
+    setFilterAssignee('all');
+    setSearchTerm('');
+  };
+
+  const hasActiveFilters = filterPriority !== 'all' || filterDueDate !== 'all' || filterAssignee !== 'all' || searchTerm.trim() !== '';
 
   if (loading) {
     return (
@@ -356,30 +415,170 @@ const BoardDetail: React.FC = () => {
       {/* Filters */}
       <div className="bg-white shadow-b-lg">
         <div className="max-w-full px-6 lg:px-8 py-4">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="text"
-                placeholder="Search tasks..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-lg hover:border-gray-300 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:shadow-md transition-all outline-none"
-              />
+          <div className="flex flex-col gap-4">
+            {/* First Row - Search and Clear Filters */}
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                  type="text"
+                  placeholder="Search tasks..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-lg hover:border-gray-300 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:shadow-md transition-all outline-none"
+                />
+              </div>
+              
+              {hasActiveFilters && (
+                <button
+                  onClick={clearAllFilters}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X size={16} />
+                  Clear Filters
+                </button>
+              )}
             </div>
             
-            <div className="flex items-center gap-3">
+            {/* Second Row - Filter Dropdowns */}
+            <div className="flex flex-wrap items-center gap-3">
               <Filter size={16} className="text-gray-400" />
-              <select
-                value={filterPriority}
-                onChange={(e) => setFilterPriority(e.target.value as Priority | 'all')}
-                className="px-4 py-3 bg-gray-50 rounded-lg hover:border-gray-300 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:shadow-md transition-all outline-none"
-              >
-                <option value="all">All Priorities</option>
-                <option value="high">High Priority</option>
-                <option value="medium">Medium Priority</option>
-                <option value="low">Low Priority</option>
-              </select>
+              
+              {/* Priority Filter */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowPriorityDropdown(!showPriorityDropdown)}
+                  className="px-4 py-3 bg-gray-50 border-2 border-transparent rounded-lg text-left flex items-center justify-between hover:border-gray-300 focus:border-blue-500 focus:bg-white focus:shadow-md transition-all outline-none min-w-[140px]"
+                >
+                  <div className="flex items-center gap-2">
+                    <Flag className={`w-4 h-4 ${getPriorityIconColor(filterPriority)}`} />
+                    <span className="text-sm">{getPriorityLabel(filterPriority)}</span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showPriorityDropdown ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {showPriorityDropdown && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-10 overflow-hidden">
+                    {(['all', 'high', 'medium', 'low'] as (Priority | 'all')[]).map((priority) => (
+                      <button
+                        key={priority}
+                        type="button"
+                        onClick={() => {
+                          setFilterPriority(priority);
+                          setShowPriorityDropdown(false);
+                        }}
+                        className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                      >
+                        <Flag className={`w-4 h-4 ${getPriorityIconColor(priority)}`} />
+                        <span className="text-sm">{getPriorityLabel(priority)}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Due Date Filter */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowDueDateDropdown(!showDueDateDropdown)}
+                  className="px-4 py-3 bg-gray-50 border-2 border-transparent rounded-lg text-left flex items-center justify-between hover:border-gray-300 focus:border-blue-500 focus:bg-white focus:shadow-md transition-all outline-none min-w-[140px]"
+                >
+                  <div className="flex items-center gap-2">
+                    <Calendar className={`w-4 h-4 ${getDueDateIconColor(filterDueDate)}`} />
+                    <span className="text-sm">{getDueDateLabel(filterDueDate)}</span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showDueDateDropdown ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {showDueDateDropdown && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-10 overflow-hidden">
+                    {(['all', 'overdue', 'today', 'tomorrow', 'this-week', 'no-date'] as DueDateFilter[]).map((dateFilter) => (
+                      <button
+                        key={dateFilter}
+                        type="button"
+                        onClick={() => {
+                          setFilterDueDate(dateFilter);
+                          setShowDueDateDropdown(false);
+                        }}
+                        className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                      >
+                        <Calendar className={`w-4 h-4 ${getDueDateIconColor(dateFilter)}`} />
+                        <span className="text-sm">{getDueDateLabel(dateFilter)}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Assignee Filter */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowAssigneeDropdown(!showAssigneeDropdown)}
+                  className="px-4 py-3 bg-gray-50 border-2 border-transparent rounded-lg text-left flex items-center justify-between hover:border-gray-300 focus:border-blue-500 focus:bg-white focus:shadow-md transition-all outline-none min-w-[140px]"
+                >
+                  <div className="flex items-center gap-2">
+                    {filterAssignee === 'all' || filterAssignee === 'unassigned' ? (
+                      <UserIcon className="w-4 h-4 text-gray-600" />
+                    ) : (
+                      <img
+                        src={mockUsers.find(u => u.id === filterAssignee)?.avatar}
+                        alt="Assignee"
+                        className="w-4 h-4 rounded-full"
+                      />
+                    )}
+                    <span className="text-sm">{getAssigneeLabel(filterAssignee, mockUsers)}</span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showAssigneeDropdown ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {showAssigneeDropdown && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-10 overflow-hidden max-h-64 overflow-y-auto">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFilterAssignee('all');
+                        setShowAssigneeDropdown(false);
+                      }}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                    >
+                      <UserIcon className="w-4 h-4 text-gray-600" />
+                      <span className="text-sm">All Members</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFilterAssignee('unassigned');
+                        setShowAssigneeDropdown(false);
+                      }}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                    >
+                      <UserIcon className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm">Unassigned</span>
+                    </button>
+                    {mockUsers.map((teamMember) => (
+                      <button
+                        key={teamMember.id}
+                        type="button"
+                        onClick={() => {
+                          setFilterAssignee(teamMember.id);
+                          setShowAssigneeDropdown(false);
+                        }}
+                        className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                      >
+                        <img
+                          src={teamMember.avatar}
+                          alt={teamMember.name}
+                          className="w-4 h-4 rounded-full"
+                        />
+                        <span className="text-sm">{teamMember.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -479,6 +678,18 @@ const BoardDetail: React.FC = () => {
           onUpdate={handleTaskUpdate}
           onDelete={handleTaskDelete}
           boardId={boardId!}
+        />
+      )}
+
+      {/* Backdrop to close dropdowns */}
+      {(showPriorityDropdown || showDueDateDropdown || showAssigneeDropdown) && (
+        <div
+          className="fixed inset-0 z-0"
+          onClick={() => {
+            setShowPriorityDropdown(false);
+            setShowDueDateDropdown(false);
+            setShowAssigneeDropdown(false);
+          }}
         />
       )}
     </div>

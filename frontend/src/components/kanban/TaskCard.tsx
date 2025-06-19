@@ -1,10 +1,10 @@
 import React from 'react';
-import ReactMarkdown from 'react-markdown';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { Task } from '../../types';
-import { format, isToday, isTomorrow, isPast } from 'date-fns';
 import { Calendar, User as UserIcon, Flag } from 'lucide-react';
+import { getPriorityBadgeColor, getPriorityIconColor, formatDueDate, getDueDateStyle } from '../../utils/taskUtils';
+import MarkdownRenderer from '../ui/MarkdownComponents';
 
 interface TaskCardProps {
   task: Task;
@@ -27,40 +27,6 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
     transition,
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'bg-red-100 border-red-200 text-red-800';
-      case 'medium': return 'bg-yellow-100 border-yellow-200 text-yellow-800';
-      case 'low': return 'bg-green-100 border-green-200 text-green-800';
-      default: return 'bg-gray-100 border-gray-200 text-gray-800';
-    }
-  };
-
-  const getPriorityIcon = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'text-red-600';
-      case 'medium': return 'text-yellow-600';
-      case 'low': return 'text-green-600';
-      default: return 'text-gray-600';
-    }
-  };
-
-  const formatDueDate = (date: Date) => {
-    if (isToday(date)) return 'Today';
-    if (isTomorrow(date)) return 'Tomorrow';
-    return format(date, 'MMM d');
-  };
-
-  const getDueDateStyle = (date: Date) => {
-    if (isPast(date) && !isToday(date)) {
-      return 'text-red-600 bg-red-50 border-red-200';
-    }
-    if (isToday(date)) {
-      return 'text-orange-600 bg-orange-50 border-orange-200';
-    }
-    return 'text-gray-600 bg-gray-50 border-gray-200';
-  };
-
   return (
     <div
       ref={setNodeRef}
@@ -75,8 +41,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
         <h3 className="text-sm font-semibold text-gray-900 leading-5 group-hover:text-gray-700 transition-colors break-words overflow-wrap-anywhere flex-1 mr-2">
         {task.title}
       </h3>
-        <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border ${getPriorityColor(task.priority)} flex-shrink-0`}>
-          <Flag className={`w-3 h-3 ${getPriorityIcon(task.priority)}`} />
+        <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border ${getPriorityBadgeColor(task.priority)} flex-shrink-0`}>
+          <Flag className={`w-3 h-3 ${getPriorityIconColor(task.priority)}`} />
           <span className="capitalize">{task.priority}</span>
         </div>
       </div>
@@ -84,26 +50,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
       {/* Description */}
       {task.description && (
         <div className="text-xs text-gray-600 mb-3 line-clamp-2 leading-4 break-words prose prose-xs max-w-none">
-          <ReactMarkdown 
-            components={{
-              // Customize markdown components for compact display
-              p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
-              h1: ({ children }) => <h1 className="text-xs font-semibold mb-1">{children}</h1>,
-              h2: ({ children }) => <h2 className="text-xs font-semibold mb-1">{children}</h2>,
-              h3: ({ children }) => <h3 className="text-xs font-semibold mb-1">{children}</h3>,
-              h4: ({ children }) => <h4 className="text-xs font-semibold mb-1">{children}</h4>,
-              h5: ({ children }) => <h5 className="text-xs font-semibold mb-1">{children}</h5>,
-              h6: ({ children }) => <h6 className="text-xs font-semibold mb-1">{children}</h6>,
-              ul: ({ children }) => <ul className="list-disc list-inside mb-1">{children}</ul>,
-              ol: ({ children }) => <ol className="list-decimal list-inside mb-1">{children}</ol>,
-              li: ({ children }) => <li className="mb-0">{children}</li>,
-              code: ({ children }) => <code className="bg-gray-100 px-1 rounded text-xs">{children}</code>,
-              strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-              em: ({ children }) => <em className="italic">{children}</em>,
-            }}
-          >
+          <MarkdownRenderer variant="compact">
             {task.description}
-          </ReactMarkdown>
+          </MarkdownRenderer>
         </div>
       )}
 
