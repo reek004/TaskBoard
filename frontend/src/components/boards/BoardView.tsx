@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { getBoards, createBoard, deleteBoard } from '../../utils/data';
+import { getBoards, createBoard, deleteBoard, updateBoard } from '../../utils/data';
 import type { Board, CreateBoardData } from '../../types';
 import { Plus, Search, MoreVertical, Trash2, Edit3, Kanban, Eye } from 'lucide-react';
 import { format } from 'date-fns';
+import BoardModal from './BoardModal';
 
 const BoardView: React.FC = () => {
   const [boards, setBoards] = useState<Board[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingBoard, setEditingBoard] = useState<Board | null>(null);
   const [createFormData, setCreateFormData] = useState<CreateBoardData>({
     name: '',
     description: '',
@@ -38,10 +41,33 @@ const BoardView: React.FC = () => {
     e.preventDefault();
     if (!user || !createFormData.name.trim()) return;
 
-    createBoard(createFormData, user);
+    if (isEditMode && editingBoard) {
+      // Update existing board
+      updateBoard(editingBoard.id, {
+        name: createFormData.name,
+        description: createFormData.description,
+      });
+    } else {
+      // Create new board
+      createBoard(createFormData, user);
+    }
+
     setCreateFormData({ name: '', description: '' });
     setShowCreateModal(false);
+    setIsEditMode(false);
+    setEditingBoard(null);
     loadBoards();
+  };
+
+  const handleEditBoard = (board: Board) => {
+    setEditingBoard(board);
+    setCreateFormData({
+      name: board.name,
+      description: board.description || '',
+    });
+    setIsEditMode(true);
+    setShowCreateModal(true);
+    setActiveDropdown(null);
   };
 
   const handleDeleteBoard = (boardId: string) => {
@@ -52,12 +78,19 @@ const BoardView: React.FC = () => {
     setActiveDropdown(null);
   };
 
+  const handleModalClose = () => {
+    setShowCreateModal(false);
+    setCreateFormData({ name: '', description: '' });
+    setIsEditMode(false);
+    setEditingBoard(null);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Fixed Navbar */}
       <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
         <div className="max-w-full px-6 lg:px-8">
-          <div className="flex justify-between items-center h-22">
+          <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
               <div className="inline-flex items-center justify-center w-10 h-10 bg-blue-600 rounded-lg">
                 <Kanban className="w-6 h-6 text-white" />
@@ -97,7 +130,12 @@ const BoardView: React.FC = () => {
                 <p className="text-base text-gray-600 mt-1">Manage and organize your projects</p>
               </div>
               <button
-                onClick={() => setShowCreateModal(true)}
+                onClick={() => {
+                  setCreateFormData({ name: '', description: '' });
+                  setIsEditMode(false);
+                  setEditingBoard(null);
+                  setShowCreateModal(true);
+                }}
                 className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-md"
               >
                 <Plus size={20} />
@@ -233,7 +271,7 @@ const BoardView: React.FC = () => {
                                   View
                                 </Link>
                                 <button
-                                  onClick={() => setActiveDropdown(null)}
+                                  onClick={() => handleEditBoard(board)}
                                   className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                                 >
                                   <Edit3 size={14} />
@@ -270,7 +308,12 @@ const BoardView: React.FC = () => {
                 </p>
                 {!searchTerm && (
                   <button
-                    onClick={() => setShowCreateModal(true)}
+                    onClick={() => {
+                      setCreateFormData({ name: '', description: '' });
+                      setIsEditMode(false);
+                      setEditingBoard(null);
+                      setShowCreateModal(true);
+                    }}
                     className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-md"
                   >
                     <Plus size={20} />
@@ -283,76 +326,15 @@ const BoardView: React.FC = () => {
         </div>
       </div>
 
-      {/* Create Board Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 backdrop-blur-[2px] bg-opacity-40 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 border border-gray-100">
-            {/* Modal Header */}
-            <div className="flex items-center gap-4 mb-8">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
-                <Kanban className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900">Create New Board</h3>
-                <p className="text-gray-600 mt-1">Set up a new workspace for your team</p>
-              </div>
-            </div>
-
-            <form onSubmit={handleCreateBoard} className="space-y-6">
-              <div>
-                <label htmlFor="boardName" className="block text-sm font-semibold text-gray-700 mb-3">
-                  Board Name *
-                </label>
-                <input
-                  type="text"
-                  id="boardName"
-                  value={createFormData.name}
-                  onChange={(e) => setCreateFormData({ ...createFormData, name: e.target.value })}
-                  className="w-full px-4 py-4 bg-gray-50 border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all text-base placeholder-gray-400 outline-none"
-                  placeholder="e.g., Marketing Campaign Q4"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="boardDescription" className="block text-sm font-semibold text-gray-700 mb-3">
-                  Description
-                  <span className="text-gray-400 font-normal ml-2">(optional)</span>
-                </label>
-                <textarea
-                  id="boardDescription"
-                  value={createFormData.description}
-                  onChange={(e) => setCreateFormData({ ...createFormData, description: e.target.value })}
-                  className="w-full px-4 py-4 bg-gray-50 border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all text-base placeholder-gray-400 resize-none outline-none"
-                  placeholder="Brief description of what this board will be used for..."
-                  rows={4}
-                />
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-4 pt-8 border-t border-gray-100">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowCreateModal(false);
-                    setCreateFormData({ name: '', description: '' });
-                  }}
-                  className="px-6 py-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl font-medium transition-all duration-200 hover:scale-105"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Create Board
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Create/Edit Board Modal */}
+      <BoardModal
+        isOpen={showCreateModal}
+        isEditMode={isEditMode}
+        formData={createFormData}
+        onClose={handleModalClose}
+        onSubmit={handleCreateBoard}
+        onChange={setCreateFormData}
+      />
 
       {/* Click outside to close dropdown */}
       {activeDropdown && (

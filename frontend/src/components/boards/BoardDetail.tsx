@@ -352,7 +352,7 @@ const BoardDetail: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white shadow-b-lg">
         <div className="max-w-full px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             <div className="relative flex-1 max-w-md">
