@@ -112,7 +112,7 @@ const BoardView: React.FC = () => {
               </div>
               <button
                 onClick={logout}
-                className="text-sm text-gray-500 hover:text-gray-700"
+                className="text-sm text-gray-500 hover:text-gray-700 transition-all duration-200 hover:scale-105 cursor-pointer"
               >
                 Logout
               </button>
@@ -138,7 +138,7 @@ const BoardView: React.FC = () => {
                   setEditingBoard(null);
                   setShowCreateModal(true);
                 }}
-                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-md shadow-lg hover:shadow-xl transition-all duration-200 inline-flex items-center gap-2"
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-md shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 inline-flex items-center gap-2 cursor-pointer"
               >
                 <Plus size={20} />
                 New Board
@@ -266,7 +266,7 @@ const BoardView: React.FC = () => {
                                   triggerRefs.current[board.id] = el;
                                 }}
                                 onClick={() => setActiveDropdown(activeDropdown === board.id ? null : board.id)}
-                                className="inline-flex items-center p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                className="inline-flex items-center p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
                               >
                                 <MoreVertical size={16} />
                               </button>
@@ -280,21 +280,21 @@ const BoardView: React.FC = () => {
                                 <Link
                                   to={`/board/${board.id}`}
                                   onClick={() => setActiveDropdown(null)}
-                                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 cursor-pointer"
                                 >
                                   <Eye size={14} />
                                   View
                                 </Link>
                                 <button
                                   onClick={() => handleEditBoard(board)}
-                                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-all duration-200 hover:scale-105 flex items-center gap-2 cursor-pointer"
                                 >
                                   <Edit3 size={14} />
                                   Edit
                                 </button>
                                 <button
                                   onClick={() => handleDeleteBoard(board.id)}
-                                  className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-all duration-200 hover:scale-105 flex items-center gap-2 cursor-pointer"
                                 >
                                   <Trash2 size={14} />
                                   Delete
@@ -328,7 +328,7 @@ const BoardView: React.FC = () => {
                         setEditingBoard(null);
                         setShowCreateModal(true);
                       }}
-                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-md shadow-lg hover:shadow-xl transition-all duration-200 inline-flex items-center gap-2"
+                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-md shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 inline-flex items-center gap-2 cursor-pointer"
                     >
                       <Plus size={20} />
                       Create Board

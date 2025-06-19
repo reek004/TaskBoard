@@ -31,8 +31,7 @@ import KanbanColumn from '../kanban/KanbanColumn';
 import TaskCard from '../kanban/TaskCard';
 import TaskDetailModal from '../kanban/TasKDetailModal';
 import { useAuth } from '../../context/AuthContext';
-import { 
-  ArrowLeft, 
+import {
   Search, 
   Filter, 
   Plus, 
@@ -322,7 +321,7 @@ const BoardDetail: React.FC = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Board not found</h2>
-          <Link to="/" className="text-blue-600 hover:text-blue-700">
+          <Link to="/" className="text-blue-600 hover:text-blue-700 cursor-pointer">
             Return to boards
           </Link>
         </div>
@@ -342,18 +341,15 @@ const BoardDetail: React.FC = () => {
             <div className="flex items-center gap-6">
               <Link
                 to="/"
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
+                className="flex items-center gap-4 hover:opacity-80 transition-opacity cursor-pointer"
               >
-                <ArrowLeft size={20} />
-              </Link>
-              <div className="flex items-center gap-4">
                 <div className="inline-flex items-center justify-center w-10 h-10 bg-blue-600 rounded-lg">
                   <Kanban className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <h1 className="text-lg font-bold text-gray-900">TaskBoard</h1>
                 </div>
-              </div>
+              </Link>
             </div>
             
             <div className="flex items-center gap-6">
@@ -390,7 +386,7 @@ const BoardDetail: React.FC = () => {
               </div>
               <button
                 onClick={logout}
-                className="text-sm text-gray-500 hover:text-gray-700"
+                className="text-sm text-gray-500 hover:text-gray-700 transition-all duration-200 hover:scale-105 cursor-pointer"
               >
                 Logout
               </button>
@@ -431,7 +427,7 @@ const BoardDetail: React.FC = () => {
               {hasActiveFilters && (
                 <button
                   onClick={clearAllFilters}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
                 >
                   <X size={16} />
                   Clear Filters
@@ -448,7 +444,7 @@ const BoardDetail: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowPriorityDropdown(!showPriorityDropdown)}
-                  className="px-4 py-3 bg-gray-50 border-2 border-transparent rounded-lg text-left flex items-center justify-between hover:border-gray-300 focus:border-blue-500 focus:bg-white focus:shadow-md transition-all outline-none min-w-[140px]"
+                  className="px-4 py-3 bg-gray-50 border-2 border-transparent rounded-lg text-left flex items-center justify-between hover:border-gray-300 focus:border-blue-500 focus:bg-white focus:shadow-md transition-all duration-200 hover:scale-105 outline-none min-w-[140px] cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     <Flag className={`w-4 h-4 ${getPriorityIconColor(filterPriority)}`} />
@@ -467,7 +463,7 @@ const BoardDetail: React.FC = () => {
                           setFilterPriority(priority);
                           setShowPriorityDropdown(false);
                         }}
-                        className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                        className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 transition-all duration-200 hover:scale-105 cursor-pointer"
                       >
                         <Flag className={`w-4 h-4 ${getPriorityIconColor(priority)}`} />
                         <span className="text-sm">{getPriorityLabel(priority)}</span>
@@ -482,7 +478,7 @@ const BoardDetail: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowDueDateDropdown(!showDueDateDropdown)}
-                  className="px-4 py-3 bg-gray-50 border-2 border-transparent rounded-lg text-left flex items-center justify-between hover:border-gray-300 focus:border-blue-500 focus:bg-white focus:shadow-md transition-all outline-none min-w-[140px]"
+                  className="px-4 py-3 bg-gray-50 border-2 border-transparent rounded-lg text-left flex items-center justify-between hover:border-gray-300 focus:border-blue-500 focus:bg-white focus:shadow-md transition-all duration-200 hover:scale-105 outline-none min-w-[140px] cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     <Calendar className={`w-4 h-4 ${getDueDateIconColor(filterDueDate)}`} />
@@ -501,7 +497,7 @@ const BoardDetail: React.FC = () => {
                           setFilterDueDate(dateFilter);
                           setShowDueDateDropdown(false);
                         }}
-                        className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                        className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 transition-all duration-200 hover:scale-105 cursor-pointer"
                       >
                         <Calendar className={`w-4 h-4 ${getDueDateIconColor(dateFilter)}`} />
                         <span className="text-sm">{getDueDateLabel(dateFilter)}</span>
@@ -516,7 +512,7 @@ const BoardDetail: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowAssigneeDropdown(!showAssigneeDropdown)}
-                  className="px-4 py-3 bg-gray-50 border-2 border-transparent rounded-lg text-left flex items-center justify-between hover:border-gray-300 focus:border-blue-500 focus:bg-white focus:shadow-md transition-all outline-none min-w-[140px]"
+                  className="px-4 py-3 bg-gray-50 border-2 border-transparent rounded-lg text-left flex items-center justify-between hover:border-gray-300 focus:border-blue-500 focus:bg-white focus:shadow-md transition-all duration-200 hover:scale-105 outline-none min-w-[140px] cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     {filterAssignee === 'all' || filterAssignee === 'unassigned' ? (
@@ -541,7 +537,7 @@ const BoardDetail: React.FC = () => {
                         setFilterAssignee('all');
                         setShowAssigneeDropdown(false);
                       }}
-                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 transition-all duration-200 hover:scale-105 cursor-pointer"
                     >
                       <UserIcon className="w-4 h-4 text-gray-600" />
                       <span className="text-sm">All Members</span>
@@ -552,7 +548,7 @@ const BoardDetail: React.FC = () => {
                         setFilterAssignee('unassigned');
                         setShowAssigneeDropdown(false);
                       }}
-                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 transition-all duration-200 hover:scale-105 cursor-pointer"
                     >
                       <UserIcon className="w-4 h-4 text-gray-400" />
                       <span className="text-sm">Unassigned</span>
@@ -565,7 +561,7 @@ const BoardDetail: React.FC = () => {
                           setFilterAssignee(teamMember.id);
                           setShowAssigneeDropdown(false);
                         }}
-                        className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                        className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 transition-all duration-200 hover:scale-105 cursor-pointer"
                       >
                         <img
                           src={teamMember.avatar}
@@ -627,7 +623,7 @@ const BoardDetail: React.FC = () => {
                       <div className="flex gap-2">
                         <button
                           type="submit"
-                          className="px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-semibold rounded-md shadow-lg hover:shadow-xl transition-all duration-200  whitespace-nowrap"
+                          className="px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-semibold rounded-md shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 whitespace-nowrap cursor-pointer"
                         >
                           Add Column
                         </button>
@@ -637,7 +633,7 @@ const BoardDetail: React.FC = () => {
                             setShowAddColumn(false);
                             setNewColumnTitle('');
                           }}
-                          className="px-4 py-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold transition-all duration-200  text-sm whitespace-nowrap"
+                          className="px-4 py-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold transition-all duration-200 hover:scale-105 hover:shadow-xl text-sm whitespace-nowrap cursor-pointer"
                         >
                           Cancel
                         </button>
@@ -647,7 +643,7 @@ const BoardDetail: React.FC = () => {
                 ) : (
                   <button
                     onClick={() => setShowAddColumn(true)}
-                    className="w-full h-fit p-6 text-base bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-gray-600 shadow-md hover:shadow-lg"
+                    className="w-full h-fit p-6 text-base bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-200 hover:scale-105 text-gray-600 shadow-md hover:shadow-lg cursor-pointer"
                   >
                     <Plus className="h-5 w-5 mr-2 inline" />
                     Add another list

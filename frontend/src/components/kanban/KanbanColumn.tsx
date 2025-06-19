@@ -97,7 +97,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
                   />
                   <button
                     onClick={handleEditSubmit}
-                    className="px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all whitespace-nowrap"
+                    className="px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 whitespace-nowrap cursor-pointer"
                   >
                     Save
                   </button>
@@ -114,7 +114,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
                     <button
                       ref={dropdownTriggerRef}
                       onClick={() => setShowDropdown(!showDropdown)}
-                      className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                      className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-all duration-200 hover:scale-105 cursor-pointer"
                     >
                       <MoreHorizontal className="h-4 w-4" />
                     </button>
@@ -127,21 +127,21 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
                     >
                       <button
                         onClick={handleAddTaskFromDropdown}
-                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-all duration-200 hover:scale-105 flex items-center gap-2 cursor-pointer"
                       >
                         <Plus className="h-4 w-4" />
                         Add Task
                       </button>
                       <button
                         onClick={handleEditFromDropdown}
-                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-all duration-200 hover:scale-105 flex items-center gap-2 cursor-pointer"
                       >
                         <Edit className="h-4 w-4" />
                         Edit Column
                       </button>
                       <button
                         onClick={handleDeleteColumn}
-                        className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                        className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-all duration-200 hover:scale-105 flex items-center gap-2 cursor-pointer"
                       >
                         <Trash2 className="h-4 w-4" />
                         Delete Column
@@ -171,7 +171,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
             {/* Add Task Button */}
             <button
               onClick={() => setShowAddTaskModal(true)}
-              className="w-full flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors text-sm justify-start"
+              className="w-full flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:scale-105 text-sm justify-start cursor-pointer"
             >
               <Plus className="h-4 w-4" />
               Add a card

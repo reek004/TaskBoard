@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import ReactMarkdown from 'react-markdown';
+import React, { useState, useRef } from 'react';
+import MarkdownRenderer from '../ui/MarkdownComponents';
 import type { CreateTaskData, Priority, User } from '../../types';
 import { mockUsers } from '../../utils/data';
 import { ChevronDown, Flag, User as UserIcon, Calendar, Eye, Edit3 } from 'lucide-react';
@@ -27,6 +27,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const [showPriorityDropdown, setShowPriorityDropdown] = useState(false);
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
   const [showMarkdownPreview, setShowMarkdownPreview] = useState(false);
+  const dateInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 
@@ -91,251 +92,241 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 backdrop-blur-[2px] bg-opacity-40 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 border border-gray-100">
+    <div className="fixed inset-0 backdrop-blur-[2px] bg-opacity-40 flex items-center justify-center p-2 sm:p-4 z-50">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xs sm:max-w-lg md:max-w-2xl max-h-[95vh] overflow-hidden border border-gray-100">
         {/* Modal Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
-            <Flag className="w-6 h-6 text-white" />
+        <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-6 md:p-8 pb-4 sm:pb-6 md:pb-8 border-b border-gray-100">
+          <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+            <Flag className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
-          <div>
-            <h3 className="text-2xl font-bold text-gray-900">Add New Task</h3>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 truncate">Add New Task</h3>
             {columnTitle && (
-              <p className="text-gray-600 mt-1">Adding to "{columnTitle}"</p>
+              <p className="text-sm sm:text-base text-gray-600 mt-1 truncate">Adding to "{columnTitle}"</p>
             )}
           </div>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Title Field */}
-          <div>
-            <label htmlFor="title" className="block text-sm font-semibold text-gray-700 mb-3">
-              Task Title *
-            </label>
-            <input
-              type="text"
-              id="title"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-4 py-4 bg-gray-50 border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all text-base placeholder-gray-400 outline-none"
-              placeholder="Enter task title"
-              required
-              autoFocus
-            />
-          </div>
+        {/* Form - Scrollable content */}
+        <div className="overflow-y-auto max-h-[calc(95vh-140px)] p-4 sm:p-6 md:p-8 pt-0 scrollbar-hide">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            {/* Title Field */}
+            <div>
+              <label htmlFor="title" className="block text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
+                Task Title *
+              </label>
+              <input
+                type="text"
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="w-full px-3 py-3 sm:px-4 sm:py-4 bg-gray-50 border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all text-sm sm:text-base placeholder-gray-400 outline-none"
+                placeholder="Enter task title"
+                required
+                autoFocus
+              />
+            </div>
 
-          {/* Description Field */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-3">
-              Description
-              <span className="text-gray-400 font-normal ml-2">(optional, Markdown supported)</span>
-            </label>
-            <div className="flex items-center justify-between mb-3">
-              {formData.description && (
+            {/* Description Field */}
+            <div>
+              <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
+                Description
+                <span className="text-gray-400 font-normal ml-2 hidden sm:inline">(optional, Markdown supported)</span>
+                <span className="text-gray-400 font-normal ml-2 sm:hidden">(optional)</span>
+              </label>
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                {formData.description && (
+                  <button
+                    type="button"
+                    onClick={() => setShowMarkdownPreview(!showMarkdownPreview)}
+                    className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 px-2 py-1 sm:px-3 sm:py-2 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
+                  >
+                    {showMarkdownPreview ? <Edit3 size={14} /> : <Eye size={14} />}
+                    {showMarkdownPreview ? 'Edit' : 'Preview'}
+                  </button>
+                )}
+              </div>
+              
+              {showMarkdownPreview ? (
+                <div className="bg-gray-50 border-2 border-transparent rounded-xl p-3 sm:p-4 min-h-[100px] sm:min-h-[120px] text-sm sm:text-base">
+                  <MarkdownRenderer variant="modal">{formData.description || ''}</MarkdownRenderer>
+                </div>
+              ) : (
+                <textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full px-3 py-3 sm:px-4 sm:py-4 bg-gray-50 border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all text-sm sm:text-base placeholder-gray-400 resize-none outline-none"
+                  placeholder="Enter task description (Markdown supported)"
+                  rows={3}
+                />
+              )}
+            </div>
+
+            {/* Priority Field */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
+                Priority
+              </label>
+              <div className="relative">
                 <button
                   type="button"
-                  onClick={() => setShowMarkdownPreview(!showMarkdownPreview)}
-                  className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg transition-all"
+                  onClick={() => setShowPriorityDropdown(!showPriorityDropdown)}
+                  className="w-full px-3 py-3 sm:px-4 sm:py-4 bg-gray-50 border-2 border-transparent rounded-xl text-left flex items-center justify-between hover:border-gray-300 focus:border-blue-500 focus:bg-white transition-all duration-200 hover:scale-105 outline-none cursor-pointer"
                 >
-                  {showMarkdownPreview ? <Edit3 size={16} /> : <Eye size={16} />}
-                  {showMarkdownPreview ? 'Edit' : 'Preview'}
+                  <div className="flex items-center gap-2">
+                    <Flag className={`w-4 h-4 ${getPriorityColor(formData.priority)}`} />
+                    <span className="text-sm sm:text-base">{getPriorityLabel(formData.priority)}</span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showPriorityDropdown ? 'rotate-180' : ''}`} />
                 </button>
-              )}
-            </div>
-            
-            {showMarkdownPreview ? (
-              <div className="bg-gray-50 border-2 border-transparent rounded-xl p-4 min-h-[120px]">
-                <ReactMarkdown
-                  components={{
-                    h1: ({ children }) => <h1 className="text-lg font-bold mb-2 text-gray-900">{children}</h1>,
-                    h2: ({ children }) => <h2 className="text-base font-bold mb-2 text-gray-900">{children}</h2>,
-                    h3: ({ children }) => <h3 className="text-sm font-semibold mb-1 text-gray-900">{children}</h3>,
-                    h4: ({ children }) => <h4 className="text-sm font-semibold mb-1 text-gray-900">{children}</h4>,
-                    h5: ({ children }) => <h5 className="text-sm font-semibold mb-1 text-gray-900">{children}</h5>,
-                    h6: ({ children }) => <h6 className="text-sm font-semibold mb-1 text-gray-900">{children}</h6>,
-                    p: ({ children }) => <p className="mb-2 text-gray-700 leading-relaxed">{children}</p>,
-                    ul: ({ children }) => <ul className="list-disc list-inside mb-2 text-gray-700 space-y-1">{children}</ul>,
-                    ol: ({ children }) => <ol className="list-decimal list-inside mb-2 text-gray-700 space-y-1">{children}</ol>,
-                    li: ({ children }) => <li className="leading-relaxed">{children}</li>,
-                    code: ({ children }) => <code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono text-gray-800">{children}</code>,
-                    pre: ({ children }) => <pre className="bg-gray-100 p-2 rounded text-sm font-mono overflow-x-auto mb-2 text-gray-800">{children}</pre>,
-                    blockquote: ({ children }) => <blockquote className="border-l-4 border-blue-400 pl-3 italic text-gray-600 mb-2 bg-blue-50 py-1">{children}</blockquote>,
-                    strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
-                    em: ({ children }) => <em className="italic text-gray-700">{children}</em>,
-                    a: ({ children, href }) => <a href={href} className="text-blue-600 hover:text-blue-800 underline" target="_blank" rel="noopener noreferrer">{children}</a>,
-                    hr: () => <hr className="border-gray-300 my-2" />,
-                  }}
-                >
-                  {formData.description}
-                </ReactMarkdown>
-              </div>
-            ) : (
-              <textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-4 py-4 bg-gray-50 border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all text-base placeholder-gray-400 resize-none outline-none"
-                placeholder="Enter task description (Markdown supported)"
-                rows={4}
-              />
-            )}
-          </div>
-
-          {/* Priority Field */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              Priority
-            </label>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setShowPriorityDropdown(!showPriorityDropdown)}
-                className="w-full px-4 py-4 bg-gray-50 border-2 border-transparent rounded-xl text-left flex items-center justify-between hover:border-gray-300 focus:border-blue-500 focus:bg-white transition-all outline-none"
-              >
-                <div className="flex items-center gap-2">
-                  <Flag className={`w-4 h-4 ${getPriorityColor(formData.priority)}`} />
-                  <span className="text-base">{getPriorityLabel(formData.priority)}</span>
-                </div>
-                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showPriorityDropdown ? 'rotate-180' : ''}`} />
-              </button>
-              
-              {showPriorityDropdown && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-10 overflow-hidden">
-                  {(['high', 'medium', 'low'] as Priority[]).map((priority) => (
-                    <button
-                      key={priority}
-                      type="button"
-                      onClick={() => {
-                        setFormData({ ...formData, priority });
-                        setShowPriorityDropdown(false);
-                      }}
-                      className="w-full px-4 py-4 text-left hover:bg-gray-50 flex items-center gap-2 transition-colors"
-                    >
-                      <Flag className={`w-4 h-4 ${getPriorityColor(priority)}`} />
-                      <span className="text-base">{getPriorityLabel(priority)}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Due Date Field */}
-          <div>
-            <label htmlFor="dueDate" className="block text-sm font-semibold text-gray-700 mb-3">
-              Due Date
-              <span className="text-gray-400 font-normal ml-2">(optional)</span>
-            </label>
-            <div className="relative rounded-xl">
-              <Calendar className="absolute rounded-xl left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="date"
-                id="dueDate"
-                value={formData.dueDate ? formData.dueDate.toISOString().split('T')[0] : ''}
-                onChange={(e) => setFormData({ 
-                  ...formData, 
-                  dueDate: e.target.value ? new Date(e.target.value) : undefined 
-                })}
-                className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all text-base placeholder-gray-400 outline-none"
-              />
-            </div>
-          </div>
-
-          {/* Assign to Field */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              Assign to
-            </label>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setShowAssigneeDropdown(!showAssigneeDropdown)}
-                className="w-full px-4 py-4 bg-gray-50 border-2 border-transparent rounded-xl text-left flex items-center justify-between hover:border-gray-300 focus:border-blue-500 focus:bg-white transition-all outline-none"
-              >
-                <div className="flex items-center gap-2">
-                  {formData.assignees.length > 0 ? (
-                    <div className="flex items-center gap-2">
-                      <div className="flex -space-x-2">
-                        {formData.assignees.slice(0, 2).map((assignee) => (
-                          <img
-                            key={assignee.id}
-                            src={assignee.avatar}
-                            alt={assignee.name}
-                            className="w-6 h-6 rounded-full border-2 border-white"
-                          />
-                        ))}
-                        {formData.assignees.length > 2 && (
-                          <div className="w-6 h-6 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center">
-                            <span className="text-xs text-gray-600">+{formData.assignees.length - 2}</span>
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-base">
-                        {formData.assignees.length === 1 
-                          ? formData.assignees[0].name 
-                          : `${formData.assignees.length} members`}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 text-gray-500">
-                      <UserIcon className="w-4 h-4" />
-                      <span className="text-base">Select team member</span>
-                    </div>
-                  )}
-                </div>
-                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showAssigneeDropdown ? 'rotate-180' : ''}`} />
-              </button>
-              
-              {showAssigneeDropdown && (
-                <div className="absolute bottom-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-10 max-h-48 overflow-y-auto">
-                  {mockUsers.map((user) => {
-                    const isAssigned = formData.assignees.some(assignee => assignee.id === user.id);
-                    return (
+                
+                {showPriorityDropdown && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-10 overflow-hidden">
+                    {(['high', 'medium', 'low'] as Priority[]).map((priority) => (
                       <button
-                        key={user.id}
+                        key={priority}
                         type="button"
-                        onClick={() => handleAssigneeToggle(user)}
-                        className={`w-full px-4 py-4 text-left hover:bg-gray-50 flex items-center gap-3 transition-colors ${isAssigned ? 'bg-blue-50' : ''}`}
+                        onClick={() => {
+                          setFormData({ ...formData, priority });
+                          setShowPriorityDropdown(false);
+                        }}
+                        className="w-full px-3 py-3 sm:px-4 sm:py-4 text-left hover:bg-gray-50 flex items-center gap-2 transition-all duration-200 hover:scale-105 cursor-pointer"
                       >
-                        <img
-                          src={user.avatar}
-                          alt={user.name}
-                          className="w-6 h-6 rounded-full"
-                        />
-                        <div className="flex-1">
-                          <div className="font-medium text-gray-900">{user.name}</div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
-                        </div>
-                        {isAssigned && (
-                          <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                        )}
+                        <Flag className={`w-4 h-4 ${getPriorityColor(priority)}`} />
+                        <span className="text-sm sm:text-base">{getPriorityLabel(priority)}</span>
                       </button>
-                    );
-                  })}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-4 pt-8 border-t border-gray-100">
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="px-6 py-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl font-medium transition-all duration-200 hover:scale-105"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center gap-2"
-            >
-              <Flag className="w-4 h-4" />
-              Add Task
-            </button>
-          </div>
-        </form>
+            {/* Due Date Field */}
+            <div>
+              <label htmlFor="dueDate" className="block text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
+                Due Date
+                <span className="text-gray-400 font-normal ml-2">(optional)</span>
+              </label>
+              <div 
+                className="relative rounded-xl cursor-pointer"
+                onClick={() => {
+                  if (dateInputRef.current) {
+                    dateInputRef.current.focus();
+                    dateInputRef.current.showPicker?.();
+                  }
+                }}
+              >
+                <input
+                  type="date"
+                  id="dueDate"
+                  value={formData.dueDate ? formData.dueDate.toISOString().split('T')[0] : ''}
+                  onChange={(e) => setFormData({ 
+                    ...formData, 
+                    dueDate: e.target.value ? new Date(e.target.value) : undefined 
+                  })}
+                  className="w-full pl-10 sm:pl-12 pr-3 py-3 sm:pr-4 sm:py-4 bg-gray-50 border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all text-sm sm:text-base placeholder-gray-400 outline-none cursor-pointer"
+                  ref={dateInputRef}
+                />
+                <Calendar className="absolute rounded-xl left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Assign to Field */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
+                Assign to
+              </label>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowAssigneeDropdown(!showAssigneeDropdown)}
+                  className="w-full px-3 py-3 sm:px-4 sm:py-4 bg-gray-50 border-2 border-transparent rounded-xl text-left flex items-center justify-between hover:border-gray-300 focus:border-blue-500 focus:bg-white transition-all duration-200 hover:scale-105 outline-none cursor-pointer"
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    {formData.assignees.length > 0 ? (
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="flex -space-x-1 sm:-space-x-2">
+                          {formData.assignees.slice(0, 2).map((assignee) => (
+                            <img
+                              key={assignee.id}
+                              src={assignee.avatar}
+                              alt={assignee.name}
+                              className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 border-white"
+                            />
+                          ))}
+                          {formData.assignees.length > 2 && (
+                            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center">
+                              <span className="text-xs text-gray-600">+{formData.assignees.length - 2}</span>
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-sm sm:text-base truncate">
+                          {formData.assignees.length === 1 
+                            ? formData.assignees[0].name 
+                            : `${formData.assignees.length} members`}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <UserIcon className="w-4 h-4 flex-shrink-0" />
+                        <span className="text-sm sm:text-base">Select team member</span>
+                      </div>
+                    )}
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${showAssigneeDropdown ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {showAssigneeDropdown && (
+                  <div className="absolute bottom-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-10 max-h-40 sm:max-h-48 overflow-y-auto scrollbar-hide">
+                    {mockUsers.map((user) => {
+                      const isAssigned = formData.assignees.some(assignee => assignee.id === user.id);
+                      return (
+                        <button
+                          key={user.id}
+                          type="button"
+                          onClick={() => handleAssigneeToggle(user)}
+                          className={`w-full px-3 py-3 sm:px-4 sm:py-4 text-left hover:bg-gray-50 flex items-center gap-2 sm:gap-3 transition-all duration-200 hover:scale-105 ${isAssigned ? 'bg-blue-50' : ''} cursor-pointer`}
+                        >
+                          <img
+                            src={user.avatar}
+                            alt={user.name}
+                            className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex-shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-gray-900 text-sm sm:text-base truncate">{user.name}</div>
+                            <div className="text-xs sm:text-sm text-gray-500 truncate">{user.email}</div>
+                          </div>
+                          {isAssigned && (
+                            <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 pt-6 sm:pt-8 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="w-full sm:w-auto px-4 py-3 sm:px-6 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl font-medium transition-all duration-200 hover:scale-105 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="w-full sm:w-auto px-6 py-3 sm:px-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Flag className="w-4 h-4" />
+                Add Task
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
 
       {/* Backdrop to close dropdowns */}

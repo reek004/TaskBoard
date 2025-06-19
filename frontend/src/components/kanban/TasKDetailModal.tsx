@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
+import React, { useState, useEffect, useRef } from 'react';
+import MarkdownRenderer from '../ui/MarkdownComponents';
 import type { Task, Priority } from '../../types';
 import { mockUsers, addComment } from '../../utils/data';
 import { useAuth } from '../../context/AuthContext';
@@ -46,6 +46,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   const [showMarkdownPreview, setShowMarkdownPreview] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [showPriorityDropdown, setShowPriorityDropdown] = useState(false);
+  const dateInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setEditData({
@@ -154,13 +155,13 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               <>
                 <button
                   onClick={handleSave}
-                  className="p-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl transition-all duration-200 hover:scale-105 shadow-lg"
+                  className="p-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl cursor-pointer"
                 >
                   <Save size={20} />
                 </button>
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="p-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 hover:scale-105"
+                  className="p-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-xl cursor-pointer"
                 >
                   <X size={20} />
                 </button>
@@ -169,19 +170,19 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               <>
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="p-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 hover:scale-105"
+                  className="p-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-xl cursor-pointer"
                 >
                   <Edit3 size={20} />
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="p-3 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-200 hover:scale-105"
+                  className="p-3 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-xl cursor-pointer"
                 >
                   <Trash2 size={20} />
                 </button>
                 <button
                   onClick={onClose}
-                  className="p-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 hover:scale-105"
+                  className="p-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-xl cursor-pointer"
                 >
                   <X size={20} />
                 </button>
@@ -193,7 +194,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
         {/* Content */}
         <div className="flex h-[calc(90vh-120px)]">
           {/* Main Content */}
-          <div className="flex-1 p-8 overflow-y-auto space-y-6">
+          <div className="flex-1 p-8 overflow-y-auto space-y-6 scrollbar-hide">
             {/* Description */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-3">
@@ -204,7 +205,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                 {isEditing && editData.description && (
                   <button
                     onClick={() => setShowMarkdownPreview(!showMarkdownPreview)}
-                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg transition-all"
+                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
                   >
                     {showMarkdownPreview ? <Edit3 size={16} /> : <Eye size={16} />}
                     {showMarkdownPreview ? 'Edit' : 'Preview'}
@@ -215,29 +216,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               {isEditing ? (
                 showMarkdownPreview ? (
                   <div className="bg-gray-50 border-2 border-transparent rounded-xl p-4 min-h-[200px]">
-                    <ReactMarkdown
-                      components={{
-                        h1: ({ children }) => <h1 className="text-xl font-bold mb-3 text-gray-900">{children}</h1>,
-                        h2: ({ children }) => <h2 className="text-lg font-bold mb-2 text-gray-900">{children}</h2>,
-                        h3: ({ children }) => <h3 className="text-base font-semibold mb-2 text-gray-900">{children}</h3>,
-                        h4: ({ children }) => <h4 className="text-sm font-semibold mb-1 text-gray-900">{children}</h4>,
-                        h5: ({ children }) => <h5 className="text-sm font-semibold mb-1 text-gray-900">{children}</h5>,
-                        h6: ({ children }) => <h6 className="text-sm font-semibold mb-1 text-gray-900">{children}</h6>,
-                        p: ({ children }) => <p className="mb-3 text-gray-700 leading-relaxed">{children}</p>,
-                        ul: ({ children }) => <ul className="list-disc list-inside mb-3 text-gray-700 space-y-1">{children}</ul>,
-                        ol: ({ children }) => <ol className="list-decimal list-inside mb-3 text-gray-700 space-y-1">{children}</ol>,
-                        li: ({ children }) => <li className="leading-relaxed">{children}</li>,
-                        code: ({ children }) => <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-gray-800">{children}</code>,
-                        pre: ({ children }) => <pre className="bg-gray-100 p-3 rounded-lg text-sm font-mono overflow-x-auto mb-3 text-gray-800">{children}</pre>,
-                        blockquote: ({ children }) => <blockquote className="border-l-4 border-blue-400 pl-4 italic text-gray-600 mb-3 bg-blue-50 py-2">{children}</blockquote>,
-                        strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
-                        em: ({ children }) => <em className="italic text-gray-700">{children}</em>,
-                        a: ({ children, href }) => <a href={href} className="text-blue-600 hover:text-blue-800 underline" target="_blank" rel="noopener noreferrer">{children}</a>,
-                        hr: () => <hr className="border-gray-300 my-4" />,
-                      }}
-                    >
-                      {editData.description}
-                    </ReactMarkdown>
+                    <MarkdownRenderer>{editData.description}</MarkdownRenderer>
                   </div>
                 ) : (
                   <textarea
@@ -250,29 +229,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                 )
               ) : task.description ? (
                 <div className="bg-gray-50 rounded-xl p-4">
-                  <ReactMarkdown
-                    components={{
-                      h1: ({ children }) => <h1 className="text-xl font-bold mb-3 text-gray-900">{children}</h1>,
-                      h2: ({ children }) => <h2 className="text-lg font-bold mb-2 text-gray-900">{children}</h2>,
-                      h3: ({ children }) => <h3 className="text-base font-semibold mb-2 text-gray-900">{children}</h3>,
-                      h4: ({ children }) => <h4 className="text-sm font-semibold mb-1 text-gray-900">{children}</h4>,
-                      h5: ({ children }) => <h5 className="text-sm font-semibold mb-1 text-gray-900">{children}</h5>,
-                      h6: ({ children }) => <h6 className="text-sm font-semibold mb-1 text-gray-900">{children}</h6>,
-                      p: ({ children }) => <p className="mb-3 text-gray-700 leading-relaxed">{children}</p>,
-                      ul: ({ children }) => <ul className="list-disc list-inside mb-3 text-gray-700 space-y-1">{children}</ul>,
-                      ol: ({ children }) => <ol className="list-decimal list-inside mb-3 text-gray-700 space-y-1">{children}</ol>,
-                      li: ({ children }) => <li className="leading-relaxed">{children}</li>,
-                      code: ({ children }) => <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-gray-800">{children}</code>,
-                      pre: ({ children }) => <pre className="bg-gray-100 p-3 rounded-lg text-sm font-mono overflow-x-auto mb-3 text-gray-800">{children}</pre>,
-                      blockquote: ({ children }) => <blockquote className="border-l-4 border-blue-400 pl-4 italic text-gray-600 mb-3 bg-blue-50 py-2">{children}</blockquote>,
-                      strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
-                      em: ({ children }) => <em className="italic text-gray-700">{children}</em>,
-                      a: ({ children, href }) => <a href={href} className="text-blue-600 hover:text-blue-800 underline" target="_blank" rel="noopener noreferrer">{children}</a>,
-                      hr: () => <hr className="border-gray-300 my-4" />,
-                    }}
-                  >
-                    {task.description}
-                  </ReactMarkdown>
+                  <MarkdownRenderer>{task.description}</MarkdownRenderer>
                 </div>
               ) : (
                 <p className="text-gray-500 italic bg-gray-50 rounded-xl p-4">No description provided</p>
@@ -298,7 +255,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                   <button
                     type="submit"
                     disabled={!newComment.trim()}
-                    className="self-end px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    className="self-end px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
                     <Send size={16} />
                   </button>
@@ -328,7 +285,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                           {(user?.id === comment.author.id || user?.role === 'admin') && (
                             <button
                               onClick={() => handleDeleteComment(comment.id)}
-                              className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-all"
+                              className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-all duration-200 hover:scale-105 cursor-pointer"
                               title="Delete comment"
                             >
                               <Trash2 size={14} />
@@ -350,7 +307,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           </div>
 
           {/* Sidebar */}
-          <div className="w-80 border-l border-gray-100 p-8 bg-gray-50">
+          <div className="w-80 border-l border-gray-100 p-8 bg-gray-50 overflow-y-auto scrollbar-hide">
             <div className="space-y-6">
               {/* Priority */}
               <div>
@@ -362,7 +319,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                     <button
                       type="button"
                       onClick={() => setShowPriorityDropdown(!showPriorityDropdown)}
-                      className="w-full px-4 py-4 bg-white border-2 border-transparent rounded-xl text-left flex items-center justify-between hover:border-gray-300 focus:border-blue-500 focus:bg-white transition-all outline-none"
+                      className="w-full px-4 py-4 bg-white border-2 border-transparent rounded-xl text-left flex items-center justify-between hover:border-gray-300 focus:border-blue-500 focus:bg-white transition-all duration-200 hover:scale-105 outline-none cursor-pointer"
                     >
                       <div className="flex items-center gap-2">
                         <Flag className={`w-4 h-4 ${getPriorityIconColor(editData.priority as Priority)}`} />
@@ -381,7 +338,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                               setEditData({ ...editData, priority });
                               setShowPriorityDropdown(false);
                             }}
-                            className="w-full px-4 py-4 text-left hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                            className="w-full px-4 py-4 text-left hover:bg-gray-50 flex items-center gap-2 transition-all duration-200 hover:scale-105 cursor-pointer"
                           >
                             <Flag className={`w-4 h-4 ${getPriorityIconColor(priority)}`} />
                             <span className="text-base">{getPriorityLabel(priority)}</span>
@@ -406,7 +363,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                   Assignees
                 </label>
                 {isEditing ? (
-                  <div className="space-y-3 bg-white rounded-xl p-4 max-h-48 overflow-y-auto">
+                  <div className="space-y-3 bg-white rounded-xl p-4 max-h-48 overflow-y-auto ">
                     {mockUsers.map((user) => (
                       <label key={user.id} className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
                         <input
@@ -465,14 +422,23 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                   <span className="text-gray-400 font-normal ml-2">(optional)</span>
                 </label>
                 {isEditing ? (
-                  <div className="relative">
-                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <div 
+                    className="relative cursor-pointer"
+                    onClick={() => {
+                      if (dateInputRef.current) {
+                        dateInputRef.current.focus();
+                        dateInputRef.current.showPicker?.();
+                      }
+                    }}
+                  >
                     <input
                       type="date"
                       value={editData.dueDate}
                       onChange={(e) => setEditData({ ...editData, dueDate: e.target.value })}
-                      className="w-full pl-12 pr-4 py-4 bg-white border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all outline-none"
+                      className="w-full pl-12 pr-4 py-4 bg-white border-2 border-transparent rounded-xl hover:border-gray-300 focus:ring-0 focus:border-blue-500 focus:bg-white transition-all outline-none cursor-pointer"
+                      ref={dateInputRef}
                     />
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 px-4 py-3 bg-white rounded-xl">
