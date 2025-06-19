@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import type { Column, Task, CreateTaskData } from '../../types';
 import TaskCard from './TaskCard';
 import AddTaskModal from './AddTaskModal';
-import { Plus, MoreHorizontal, Edit, Trash2,} from 'lucide-react';
+import DropdownPortal from '../common/DropdownPortal';
+import { Plus, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
 
 interface KanbanColumnProps {
   column: Column;
@@ -27,6 +28,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
   const [editTitle, setEditTitle] = useState(column.title);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
+  const dropdownTriggerRef = useRef<HTMLButtonElement>(null);
 
   const { setNodeRef } = useDroppable({
     id: column.id,
@@ -65,6 +67,16 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
     setShowDropdown(false);
   };
 
+  const handleAddTaskFromDropdown = () => {
+    setShowAddTaskModal(true);
+    setShowDropdown(false);
+  };
+
+  const handleEditFromDropdown = () => {
+    setIsEditing(true);
+    setShowDropdown(false);
+  };
+
   return (
     <>
       <div className="flex-shrink-0 w-full sm:w-80">
@@ -100,32 +112,41 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
                   </div>
                   <div className="relative">
                     <button
+                      ref={dropdownTriggerRef}
                       onClick={() => setShowDropdown(!showDropdown)}
                       className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
                     >
                       <MoreHorizontal className="h-4 w-4" />
                     </button>
-                    {showDropdown && (
-                      <div className="absolute right-0 top-8 bg-white rounded-lg shadow-xl py-1 z-10 min-w-[120px]">
-                        <button
-                          onClick={() => {
-                            setIsEditing(true);
-                            setShowDropdown(false);
-                          }}
-                          className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                        >
-                          <Edit className="h-4 w-4" />
-                          Edit
-                        </button>
-                        <button
-                          onClick={handleDeleteColumn}
-                          className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Delete
-                        </button>
-                      </div>
-                    )}
+                    
+                    <DropdownPortal
+                      isOpen={showDropdown}
+                      triggerRef={dropdownTriggerRef}
+                      onClose={() => setShowDropdown(false)}
+                      className="py-1"
+                    >
+                      <button
+                        onClick={handleAddTaskFromDropdown}
+                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Add Task
+                      </button>
+                      <button
+                        onClick={handleEditFromDropdown}
+                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                      >
+                        <Edit className="h-4 w-4" />
+                        Edit Column
+                      </button>
+                      <button
+                        onClick={handleDeleteColumn}
+                        className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete Column
+                      </button>
+                    </DropdownPortal>
                   </div>
                 </>
               )}
