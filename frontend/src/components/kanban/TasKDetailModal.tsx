@@ -5,8 +5,7 @@ import { mockUsers, addComment } from '../../utils/data';
 import { useAuth } from '../../context/AuthContext';
 import { 
   X, 
-  Calendar, 
-  Users as UsersIcon, 
+  Calendar,  
   Flag, 
   Eye, 
   Edit3, 
