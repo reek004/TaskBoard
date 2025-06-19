@@ -443,6 +443,33 @@ export const moveTask = (boardId: string, taskId: string, sourceColumnId: string
   return true;
 };
 
+export const reorderTasksInColumn = (boardId: string, columnId: string, taskIds: string[]): boolean => {
+  const boards = getBoards();
+  const board = boards.find(b => b.id === boardId);
+  
+  if (!board) return false;
+  
+  const column = board.columns.find(col => col.id === columnId);
+  if (!column) return false;
+  
+  // Create a map of tasks by ID for quick lookup
+  const taskMap = new Map(column.tasks.map(task => [task.id, task]));
+  
+  // Reorder tasks based on the provided taskIds array
+  const reorderedTasks = taskIds.map(id => taskMap.get(id)).filter(Boolean) as Task[];
+  
+  // Ensure we have all tasks (in case some IDs were missing)
+  if (reorderedTasks.length !== column.tasks.length) {
+    console.error('Task count mismatch during reordering');
+    return false;
+  }
+  
+  column.tasks = reorderedTasks;
+  board.updatedAt = new Date();
+  saveBoards(boards);
+  return true;
+};
+
 export const addComment = (boardId: string, taskId: string, text: string, author: User): Comment | null => {
   const boards = getBoards();
   const board = boards.find(b => b.id === boardId);

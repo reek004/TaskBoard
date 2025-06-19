@@ -23,7 +23,8 @@ import {
   createTask,
   updateTask,
   deleteTask,
-  moveTask
+  moveTask,
+  reorderTasksInColumn
 } from '../../utils/data';
 import type { Board, Task, Column, CreateTaskData, CreateColumnData, Priority } from '../../types';
 import KanbanColumn from '../kanban/KanbanColumn';
@@ -244,7 +245,8 @@ const BoardDetail: React.FC = () => {
     // If same column, reorder tasks
     if (overColumn && activeColumn.id === overColumn.id) {
       const newTasks = arrayMove(activeColumn.tasks, activeIndex, overIndex);
-      // backend
+      const taskIds = newTasks.map(task => task.id);
+      reorderTasksInColumn(boardId, activeColumn.id, taskIds);
       loadBoard();
     }
   };
