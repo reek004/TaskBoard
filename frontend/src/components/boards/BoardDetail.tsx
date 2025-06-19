@@ -16,7 +16,6 @@ import type {
 import { arrayMove } from '@dnd-kit/sortable';
 import { 
   getBoardById, 
-  updateBoard, 
   createColumn, 
   updateColumn, 
   deleteColumn,
@@ -26,7 +25,7 @@ import {
   moveTask,
   reorderTasksInColumn
 } from '../../utils/data';
-import type { Board, Task, Column, CreateTaskData, CreateColumnData, Priority, User } from '../../types';
+import type { Board, Task, Column, CreateTaskData, CreateColumnData, Priority } from '../../types';
 import { mockUsers } from '../../utils/data';
 import KanbanColumn from '../kanban/KanbanColumn';
 import TaskCard from '../kanban/TaskCard';
@@ -45,7 +44,7 @@ import {
   User as UserIcon,
   X
 } from 'lucide-react';
-import { isToday, isTomorrow, isPast, isThisWeek, parseISO, format } from 'date-fns';
+import { isToday, isTomorrow, isPast, isThisWeek } from 'date-fns';
 import { 
   getPriorityLabel, 
   getPriorityIconColor, 

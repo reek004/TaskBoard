@@ -57,6 +57,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         name: email.split('@')[0],
         email,
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(email.split('@')[0])}&background=3b82f6&color=fff`,
+        role: 'user',
       };
       
       localStorage.setItem('auth_user', JSON.stringify(user));
@@ -78,6 +79,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         name,
         email,
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3b82f6&color=fff`,
+        role: 'user',
       };
       
       localStorage.setItem('auth_user', JSON.stringify(user));

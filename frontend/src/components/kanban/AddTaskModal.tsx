@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import type { CreateTaskData, Priority, User } from '../../types';
 import { mockUsers } from '../../utils/data';
-import { X, ChevronDown, Flag, User as UserIcon, Calendar, Eye, Edit3 } from 'lucide-react';
+import { ChevronDown, Flag, User as UserIcon, Calendar, Eye, Edit3 } from 'lucide-react';
 
 interface AddTaskModalProps {
   isOpen: boolean;

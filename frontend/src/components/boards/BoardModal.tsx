@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Board, CreateBoardData } from '../../types';
+import type { CreateBoardData } from '../../types';
 import { Plus, Edit3, Kanban } from 'lucide-react';
 
 interface BoardModalProps {
